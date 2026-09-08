@@ -1,0 +1,3297 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>GCS Trainer — Escala de Glasgow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep:    #0B1520;
+    --bg-card:    #131F2E;
+    --bg-card2:   #1A2A3F;
+    --border:     #243447;
+    --text-main:  #E8F0FE;
+    --text-sub:   #7A9BB8;
+    --text-muted: #445A73;
+    --accent:     #22C55E;
+    --accent-dim: #16803C;
+    --danger:     #EF4444;
+    --danger-dim: #7F1D1D;
+    --warn:       #F59E0B;
+    --warn-dim:   #78350F;
+    --blue:       #3B82F6;
+    --blue-dim:   #1E3A5F;
+    --purple:     #A78BFA;
+    --gcs-o:      #60A5FA;
+    --gcs-v:      #34D399;
+    --gcs-m:      #F472B6;
+    --radius:     12px;
+    --radius-sm:  8px;
+    --font-head:  'Space Grotesk', sans-serif;
+    --font-body:  'Inter', sans-serif;
+    --nav-h:      64px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+
+  body {
+    background: var(--bg-deep);
+    color: var(--text-main);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg-deep); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  /* ── NAV ── */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    height: var(--nav-h);
+    background: rgba(11,21,32,.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px;
+    z-index: 100;
+  }
+
+  .nav-logo {
+    font-family: var(--font-head);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-main);
+    display: flex; align-items: center; gap: 10px;
+  }
+
+  .nav-logo .pulse {
+    width: 10px; height: 10px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(34,197,94,.5); }
+    50% { box-shadow: 0 0 0 6px rgba(34,197,94,0); }
+  }
+
+  .nav-tabs {
+    display: flex; gap: 4px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 3px;
+  }
+
+  .nav-tab {
+    padding: 6px 16px;
+    border-radius: 6px;
+    font-family: var(--font-head);
+    font-size: .85rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all .2s;
+    color: var(--text-sub);
+    background: transparent;
+  }
+
+  .nav-tab.active {
+    background: var(--blue);
+    color: #fff;
+  }
+
+  .nav-xp {
+    display: flex; align-items: center; gap: 8px;
+    font-family: var(--font-head);
+    font-size: .85rem;
+    font-weight: 600;
+  }
+
+  .xp-badge {
+    background: linear-gradient(135deg, #F59E0B, #EF4444);
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: .8rem;
+  }
+
+  .streak-badge {
+    display: flex; align-items: center; gap: 4px;
+    color: var(--warn);
+    font-size: .9rem;
+  }
+
+  /* ── MAIN ── */
+  .main {
+    padding-top: calc(var(--nav-h) + 24px);
+    padding-bottom: 32px;
+    max-width: 800px;
+    margin: 0 auto;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  /* ── SECTIONS ── */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* ── TEORIA ── */
+  .teoria-hero {
+    background: linear-gradient(135deg, #1A2A3F 0%, #0B1520 100%);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 24px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .teoria-hero::before {
+    content: 'GCS';
+    position: absolute; right: -10px; top: -20px;
+    font-family: var(--font-head);
+    font-size: 8rem;
+    font-weight: 700;
+    color: rgba(59,130,246,.06);
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .teoria-hero h1 {
+    font-family: var(--font-head);
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+
+  .teoria-hero p {
+    color: var(--text-sub);
+    font-size: .9rem;
+    max-width: 520px;
+  }
+
+  .tag {
+    display: inline-block;
+    background: var(--blue-dim);
+    color: var(--blue);
+    border: 1px solid rgba(59,130,246,.3);
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: .75rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    font-family: var(--font-head);
+  }
+
+  /* ── ACCORDION ── */
+  .accordion {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+
+  .acc-header {
+    background: var(--bg-card);
+    padding: 16px 20px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: space-between;
+    transition: background .2s;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  .acc-header:hover { background: var(--bg-card2); }
+
+  .acc-header h3 {
+    font-family: var(--font-head);
+    font-size: 1rem;
+    font-weight: 600;
+    display: flex; align-items: center; gap: 10px;
+  }
+
+  .acc-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .acc-arrow {
+    color: var(--text-sub);
+    font-size: 1.2rem;
+    transition: transform .3s;
+  }
+
+  .acc-body {
+    display: none;
+    background: var(--bg-deep);
+    border-top: 1px solid var(--border);
+  }
+
+  .acc-body.open { display: block; }
+  .acc-header.open .acc-arrow { transform: rotate(180deg); }
+
+  .acc-inner {
+    padding: 20px;
+  }
+
+  /* ── SCORE TABLE ── */
+  .score-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .85rem;
+    margin-top: 8px;
+  }
+
+  .score-table th {
+    background: var(--bg-card);
+    color: var(--text-sub);
+    font-family: var(--font-head);
+    font-weight: 600;
+    font-size: .75rem;
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .score-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(36,52,71,.5);
+    vertical-align: top;
+    line-height: 1.5;
+  }
+
+  .score-table tr:last-child td { border-bottom: none; }
+
+  .score-num {
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 1.1rem;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .score-label {
+    font-family: var(--font-head);
+    font-weight: 600;
+    font-size: .85rem;
+  }
+
+  .score-desc {
+    color: var(--text-sub);
+    font-size: .8rem;
+  }
+
+  /* Colored score nums */
+  .c-o { color: var(--gcs-o); }
+  .c-v { color: var(--gcs-v); }
+  .c-m { color: var(--gcs-m); }
+
+  /* Interpretation table */
+  .interp-row-15 { background: rgba(34,197,94,.05); }
+  .interp-row-13 { background: rgba(59,130,246,.05); }
+  .interp-row-9  { background: rgba(245,158,11,.05); }
+  .interp-row-8  { background: rgba(239,68,68,.1); }
+  .interp-row-3  { background: rgba(239,68,68,.18); }
+
+  /* ── CRITICAL BOX ── */
+  .critical-box {
+    background: rgba(239,68,68,.08);
+    border: 1px solid rgba(239,68,68,.3);
+    border-left: 4px solid var(--danger);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    margin-top: 16px;
+    font-size: .85rem;
+  }
+
+  .critical-box strong {
+    color: var(--danger);
+    font-family: var(--font-head);
+    font-size: .9rem;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .info-box {
+    background: rgba(59,130,246,.06);
+    border: 1px solid rgba(59,130,246,.2);
+    border-left: 4px solid var(--blue);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    margin-top: 16px;
+    font-size: .85rem;
+    color: var(--text-sub);
+  }
+
+  .info-box strong {
+    color: var(--blue);
+    font-family: var(--font-head);
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .warn-box {
+    background: rgba(245,158,11,.06);
+    border: 1px solid rgba(245,158,11,.2);
+    border-left: 4px solid var(--warn);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    margin-top: 16px;
+    font-size: .85rem;
+    color: var(--text-sub);
+  }
+
+  .warn-box strong {
+    color: var(--warn);
+    font-family: var(--font-head);
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  /* ── PUPIL SECTION ── */
+  .pupil-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .pupil-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    text-align: center;
+  }
+
+  .pupil-icon {
+    font-size: 1.8rem;
+    margin-bottom: 6px;
+  }
+
+  .pupil-card h4 {
+    font-family: var(--font-head);
+    font-size: .8rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .pupil-card p {
+    font-size: .75rem;
+    color: var(--text-sub);
+  }
+
+  /* ── REGLAS ── */
+  .rule-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .rule-list li {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    font-size: .85rem;
+  }
+
+  .rule-icon {
+    font-size: 1rem;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* ── PRACTICA SECTION ── */
+  .practica-header {
+    margin-bottom: 20px;
+  }
+
+  .practica-header h2 {
+    font-family: var(--font-head);
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .practica-header p {
+    color: var(--text-sub);
+    font-size: .9rem;
+  }
+
+  /* ── STATS BAR ── */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 12px;
+    text-align: center;
+  }
+
+  .stat-card .val {
+    font-family: var(--font-head);
+    font-size: 1.4rem;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .stat-card .lbl {
+    font-size: .7rem;
+    color: var(--text-sub);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+
+  .stat-card.xp .val  { color: var(--warn); }
+  .stat-card.str .val { color: #FF6B35; }
+  .stat-card.cor .val { color: var(--accent); }
+  .stat-card.lvl .val { color: var(--purple); }
+
+  /* ── LEVEL SELECTOR ── */
+  .level-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .level-tabs::-webkit-scrollbar { display: none; }
+
+  .level-tab {
+    flex-shrink: 0;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-family: var(--font-head);
+    font-size: .8rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    transition: all .2s;
+    color: var(--text-sub);
+    background: var(--bg-card);
+    display: flex; align-items: center; gap: 6px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .level-tab.active {
+    border-color: var(--blue);
+    color: var(--blue);
+    background: rgba(59,130,246,.1);
+  }
+
+  .level-tab.locked {
+    opacity: .4;
+    cursor: not-allowed;
+  }
+
+  /* ── CASE GRID ── */
+  .cases-grid {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 5px;
+    margin-bottom: 20px;
+  }
+
+  .case-btn {
+    height: 36px;
+    border-radius: 6px;
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: .78rem;
+    cursor: pointer;
+    border: 2px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-sub);
+    transition: all .15s;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+    -webkit-tap-highlight-color: transparent;
+    padding: 0;
+  }
+
+  .case-btn.completed {
+    background: rgba(34,197,94,.15);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .case-btn.completed::after {
+    content: '★';
+    position: absolute;
+    top: 0px; right: 2px;
+    font-size: .45rem;
+    color: var(--accent);
+  }
+
+  /* Correct after retry: lighter green, no star */
+  .case-btn.completed-retry {
+    background: rgba(34,197,94,.07);
+    border-color: rgba(34,197,94,.4);
+    color: var(--accent);
+  }
+
+  .case-btn.completed-retry::after {
+    content: '✓';
+    position: absolute;
+    top: 1px; right: 3px;
+    font-size: .5rem;
+    color: rgba(34,197,94,.6);
+  }
+
+  .case-btn.failed {
+    background: rgba(239,68,68,.1);
+    border-color: var(--danger);
+    color: var(--danger);
+  }
+
+  .case-btn.current {
+    background: rgba(59,130,246,.15);
+    border-color: var(--blue);
+    color: var(--blue);
+  }
+
+  .case-btn.locked {
+    opacity: .3;
+    cursor: not-allowed;
+  }
+
+  .case-btn:not(.locked):hover {
+    transform: scale(1.05);
+    border-color: var(--blue);
+  }
+
+  /* ── CASE CARD ── */
+  .case-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .case-card-header {
+    background: linear-gradient(135deg, var(--bg-card2), var(--bg-deep));
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 12px;
+  }
+
+  .case-num {
+    font-family: var(--font-head);
+    font-size: .75rem;
+    font-weight: 600;
+    color: var(--text-sub);
+    display: block;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+  }
+
+  .case-scene {
+    font-family: var(--font-head);
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--text-main);
+  }
+
+  .level-badge {
+    flex-shrink: 0;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-family: var(--font-head);
+    font-size: .7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+  }
+
+  .badge-1 { background: rgba(34,197,94,.15); color: var(--accent); border: 1px solid rgba(34,197,94,.3); }
+  .badge-2 { background: rgba(245,158,11,.15); color: var(--warn); border: 1px solid rgba(245,158,11,.3); }
+  .badge-3 { background: rgba(239,68,68,.15); color: var(--danger); border: 1px solid rgba(239,68,68,.3); }
+
+  .case-body {
+    padding: 20px;
+  }
+
+  .case-eval-title {
+    font-family: var(--font-head);
+    font-size: .8rem;
+    font-weight: 600;
+    color: var(--text-sub);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    margin-bottom: 12px;
+  }
+
+  .case-text {
+    background: var(--bg-deep);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    font-size: .875rem;
+    line-height: 1.7;
+    color: var(--text-sub);
+    margin-bottom: 24px;
+    white-space: pre-line;
+  }
+
+  /* ── GCS METER ── */
+  .gcs-meter {
+    margin-bottom: 24px;
+  }
+
+  .gcs-total-display {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg-deep);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    margin-bottom: 16px;
+  }
+
+  .gcs-total-label {
+    font-family: var(--font-head);
+    font-size: .85rem;
+    color: var(--text-sub);
+    font-weight: 500;
+  }
+
+  .gcs-total-value {
+    font-family: var(--font-head);
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    transition: color .3s;
+  }
+
+  .gcs-components {
+    display: flex;
+    gap: 6px;
+    font-family: var(--font-head);
+    font-size: .8rem;
+    color: var(--text-sub);
+  }
+
+  .gcs-comp-val {
+    font-weight: 700;
+  }
+
+  .gcs-comp-val.c-o { color: var(--gcs-o); }
+  .gcs-comp-val.c-v { color: var(--gcs-v); }
+  .gcs-comp-val.c-m { color: var(--gcs-m); }
+
+  .gcs-classification {
+    font-size: .8rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: var(--font-head);
+  }
+
+  /* ── COMPONENT SELECTOR ── */
+  .comp-group {
+    margin-bottom: 20px;
+  }
+
+  .comp-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .comp-badge {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: .85rem;
+    flex-shrink: 0;
+  }
+
+  .comp-badge.o { background: rgba(96,165,250,.15); color: var(--gcs-o); border: 1px solid rgba(96,165,250,.3); }
+  .comp-badge.v { background: rgba(52,211,153,.15); color: var(--gcs-v); border: 1px solid rgba(52,211,153,.3); }
+  .comp-badge.m { background: rgba(244,114,182,.15); color: var(--gcs-m); border: 1px solid rgba(244,114,182,.3); }
+
+  .comp-name {
+    font-family: var(--font-head);
+    font-weight: 600;
+    font-size: .9rem;
+    flex: 1;
+  }
+
+  .comp-progress-bar {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .comp-progress-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width .3s ease;
+  }
+  .fill-o { background: var(--gcs-o); }
+  .fill-v { background: var(--gcs-v); }
+  .fill-m { background: var(--gcs-m); }
+
+  .comp-current-val {
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: .9rem;
+    min-width: 16px;
+    text-align: right;
+  }
+
+  .options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .option-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--bg-deep);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 11px 14px;
+    cursor: pointer;
+    transition: all .18s;
+    -webkit-tap-highlight-color: transparent;
+    text-align: left;
+    width: 100%;
+  }
+
+  .option-btn:hover {
+    border-color: var(--blue);
+    background: rgba(59,130,246,.05);
+  }
+
+  .option-btn.selected-o { border-color: var(--gcs-o); background: rgba(96,165,250,.08); }
+  .option-btn.selected-v { border-color: var(--gcs-v); background: rgba(52,211,153,.08); }
+  .option-btn.selected-m { border-color: var(--gcs-m); background: rgba(244,114,182,.08); }
+
+  .opt-num {
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 1rem;
+    width: 24px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .opt-content { flex: 1; }
+
+  .opt-title {
+    font-family: var(--font-head);
+    font-size: .85rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 2px;
+  }
+
+  .opt-desc {
+    font-size: .75rem;
+    color: var(--text-sub);
+    line-height: 1.4;
+  }
+
+  .opt-radio {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .18s;
+  }
+
+  .opt-radio.checked-o { border-color: var(--gcs-o); background: var(--gcs-o); }
+  .opt-radio.checked-v { border-color: var(--gcs-v); background: var(--gcs-v); }
+  .opt-radio.checked-m { border-color: var(--gcs-m); background: var(--gcs-m); }
+
+  .opt-radio::after {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #fff;
+    opacity: 0;
+    transition: opacity .18s;
+  }
+
+  .opt-radio.checked-o::after,
+  .opt-radio.checked-v::after,
+  .opt-radio.checked-m::after { opacity: 1; }
+
+  /* ── HINT ── */
+  .hint-box {
+    background: rgba(167,139,250,.06);
+    border: 1px solid rgba(167,139,250,.2);
+    border-left: 4px solid var(--purple);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    margin-bottom: 20px;
+    font-size: .82rem;
+    color: var(--text-sub);
+    display: none;
+  }
+
+  .hint-box strong {
+    color: var(--purple);
+    font-family: var(--font-head);
+  }
+
+  .hint-box.visible { display: block; }
+
+  /* ── SUBMIT BTN ── */
+  .submit-btn {
+    width: 100%;
+    padding: 16px;
+    border-radius: var(--radius);
+    font-family: var(--font-head);
+    font-size: 1rem;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: all .2s;
+    margin-bottom: 12px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .submit-btn.primary {
+    background: var(--blue);
+    color: #fff;
+  }
+
+  .submit-btn.primary:hover { background: #2563EB; transform: translateY(-1px); }
+  .submit-btn.primary:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+
+  .submit-btn.success {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .hint-toggle {
+    width: 100%;
+    padding: 10px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--purple);
+    font-family: var(--font-head);
+    font-size: .82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+    margin-bottom: 12px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .hint-toggle:hover {
+    border-color: var(--purple);
+    background: rgba(167,139,250,.05);
+  }
+
+  /* ── RESULT OVERLAY ── */
+  .result-panel {
+    display: none;
+    margin-top: 20px;
+  }
+
+  .result-panel.show { display: block; }
+
+  .result-header {
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .result-header.correct {
+    background: rgba(34,197,94,.1);
+    border: 1px solid rgba(34,197,94,.3);
+  }
+
+  .result-header.incorrect {
+    background: rgba(239,68,68,.08);
+    border: 1px solid rgba(239,68,68,.25);
+  }
+
+  .result-icon { font-size: 2rem; line-height: 1; }
+
+  .result-title {
+    font-family: var(--font-head);
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+
+  .result-correct .result-title { color: var(--accent); }
+  .result-incorrect .result-title { color: var(--danger); }
+
+  .result-sub {
+    font-size: .82rem;
+    color: var(--text-sub);
+  }
+
+  .xp-gained {
+    margin-left: auto;
+    text-align: center;
+    font-family: var(--font-head);
+    font-weight: 700;
+  }
+
+  .xp-gained .xp-val {
+    font-size: 1.3rem;
+    color: var(--warn);
+    display: block;
+  }
+
+  .xp-gained .xp-lbl {
+    font-size: .65rem;
+    color: var(--text-sub);
+    text-transform: uppercase;
+  }
+
+  .answer-breakdown {
+    background: var(--bg-deep);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  .answer-row {
+    display: flex;
+    align-items: center;
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(36,52,71,.5);
+    font-size: .85rem;
+    gap: 10px;
+  }
+
+  .answer-row:last-child { border-bottom: none; }
+
+  .answer-comp {
+    font-family: var(--font-head);
+    font-weight: 700;
+    width: 20px;
+    text-align: center;
+  }
+
+  .answer-desc { flex: 1; color: var(--text-sub); }
+
+  .answer-user {
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: .9rem;
+  }
+
+  .answer-correct-val {
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: .9rem;
+    color: var(--accent);
+  }
+
+  .answer-divider {
+    color: var(--text-muted);
+    font-size: .75rem;
+  }
+
+  .check-icon { font-size: .9rem; }
+
+  .feedback-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--blue);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    font-size: .85rem;
+    color: var(--text-sub);
+    line-height: 1.65;
+    margin-bottom: 16px;
+  }
+
+  .feedback-box strong {
+    color: var(--text-main);
+    font-family: var(--font-head);
+    display: block;
+    margin-bottom: 6px;
+    font-size: .9rem;
+  }
+
+  .next-btn {
+    width: 100%;
+    padding: 15px;
+    border-radius: var(--radius);
+    font-family: var(--font-head);
+    font-size: 1rem;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    background: var(--blue);
+    color: #fff;
+    transition: all .2s;
+    -webkit-tap-highlight-color: transparent;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+
+  .next-btn:hover { background: #2563EB; transform: translateY(-1px); }
+
+  /* ── TOAST ── */
+  .toast-container {
+    position: fixed;
+    top: calc(var(--nav-h) + 12px);
+    right: 16px;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
+  }
+
+  .toast {
+    background: var(--bg-card2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 16px;
+    font-family: var(--font-head);
+    font-size: .85rem;
+    font-weight: 600;
+    display: flex; align-items: center; gap: 8px;
+    animation: slideIn .3s ease, fadeOut .3s ease 2.5s forwards;
+    max-width: 280px;
+  }
+
+  .toast.success { border-color: var(--accent); color: var(--accent); }
+  .toast.error   { border-color: var(--danger); color: var(--danger); }
+  .toast.info    { border-color: var(--blue); color: var(--blue); }
+  .toast.warn    { border-color: var(--warn); color: var(--warn); }
+
+  @keyframes slideIn {
+    from { transform: translateX(120%); opacity: 0; }
+    to   { transform: translateX(0); opacity: 1; }
+  }
+
+  @keyframes fadeOut {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+  }
+
+  /* ── LEVEL UNLOCK MODAL ── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.75);
+    z-index: 300;
+    display: none; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+
+  .modal-overlay.show { display: flex; }
+
+  .modal {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 24px;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    animation: popIn .3s cubic-bezier(.17,.67,.34,1.25);
+  }
+
+  @keyframes popIn {
+    from { transform: scale(.8); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+  }
+
+  .modal-icon { font-size: 3rem; margin-bottom: 12px; }
+
+  .modal h3 {
+    font-family: var(--font-head);
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .modal p {
+    color: var(--text-sub);
+    font-size: .9rem;
+    margin-bottom: 20px;
+  }
+
+  .modal-btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-head);
+    font-size: .95rem;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    background: var(--blue);
+    color: #fff;
+    transition: all .2s;
+  }
+
+  .modal-btn:hover { background: #2563EB; }
+
+  /* ── PROGRESS OVERVIEW ── */
+  .progress-section {
+    margin-bottom: 24px;
+  }
+
+  .progress-section h3 {
+    font-family: var(--font-head);
+    font-size: .9rem;
+    font-weight: 600;
+    color: var(--text-sub);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+  }
+
+  .level-progress-row {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .lp-label {
+    font-family: var(--font-head);
+    font-weight: 600;
+    font-size: .85rem;
+    min-width: 80px;
+  }
+
+  .lp-bar {
+    flex: 1;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .lp-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width .5s ease;
+  }
+
+  .lp-count {
+    font-family: var(--font-head);
+    font-size: .8rem;
+    color: var(--text-sub);
+    min-width: 50px;
+    text-align: right;
+  }
+
+  /* ── NT CASES ── */
+  .nt-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg-deep);
+    border: 1.5px dashed var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: all .18s;
+    -webkit-tap-highlight-color: transparent;
+    width: 100%;
+    margin-top: 8px;
+  }
+
+  .nt-option:hover { border-color: var(--purple); }
+
+  .nt-option.selected-o,
+  .nt-option.selected-v,
+  .nt-option.selected-m {
+    border-color: var(--purple);
+    background: rgba(167,139,250,.06);
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 600px) {
+    .nav-logo span:last-child { display: none; }
+    .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    .cases-grid { grid-template-columns: repeat(10, 1fr); gap: 3px; }
+    .case-btn { height: 30px; font-size: .7rem; border-radius: 4px; border-width: 1px; }
+    .teoria-hero::before { display: none; }
+    .pupil-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .pupil-card { padding: 10px 8px; }
+    .pupil-icon { font-size: 1.4rem; }
+  }
+
+  @media (max-width: 420px) {
+    .cases-grid { grid-template-columns: repeat(10, 1fr); gap: 2px; }
+    .case-btn { height: 26px; font-size: .65rem; border-radius: 3px; }
+    .nav-tab { padding: 6px 10px; font-size: .78rem; }
+    .nav-xp { font-size: .78rem; }
+  }
+
+  /* ── SEPARATOR ── */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 20px 0;
+  }
+
+  /* ── GCS COLOR CLASSES ── */
+  .gcs-normal   { color: var(--accent); }
+  .gcs-leve     { color: var(--blue); }
+  .gcs-moderado { color: var(--warn); }
+  .gcs-coma     { color: var(--danger); }
+  .gcs-minimo   { color: #FF4D6D; }
+
+  /* ── SECTION TITLE ── */
+  .section-label {
+    font-family: var(--font-head);
+    font-size: .75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    margin-bottom: 6px;
+  }
+
+  .section-title {
+    font-family: var(--font-head);
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 16px;
+  }
+
+  /* Complete celebration */
+  .celebration {
+    text-align: center;
+    padding: 40px 20px;
+  }
+
+  .celebration-icon { font-size: 4rem; margin-bottom: 12px; }
+
+  .celebration h2 {
+    font-family: var(--font-head);
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .celebration p {
+    color: var(--text-sub);
+    font-size: .9rem;
+    max-width: 300px;
+    margin: 0 auto 20px;
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-logo">
+    <div class="pulse"></div>
+    <span>GCS</span><span>Trainer</span>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showSection('teoria')">Teoría</button>
+    <button class="nav-tab" onclick="showSection('practica')">Práctica</button>
+  </div>
+  <div class="nav-xp">
+    <div class="streak-badge" id="nav-streak">🔥 <span id="streak-count">0</span></div>
+    <div class="xp-badge" id="nav-xp">0 XP</div>
+  </div>
+</nav>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-icon" id="modal-icon">🔓</div>
+    <h3 id="modal-title">¡Nivel Desbloqueado!</h3>
+    <p id="modal-body">Has completado suficientes casos para avanzar al siguiente nivel.</p>
+    <div id="modal-btn-container"><button class="modal-btn" onclick="closeModal()">¡Continuar!</button></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- ═══ TEORIA ═══ -->
+  <section class="section active" id="section-teoria">
+
+    <div class="teoria-hero">
+      <div class="tag">PHTLS 10.ª Edición — Componente D</div>
+      <h1>Escala de Coma de Glasgow</h1>
+      <p>Herramienta de evaluación cuantitativa del estado de conciencia en la atención prehospitalaria del trauma.</p>
+    </div>
+
+    <!-- QUÉ ES -->
+    <div class="accordion">
+      <div class="acc-header" onclick="toggleAcc(this)">
+        <h3><span class="acc-dot" style="background:var(--blue)"></span>¿Qué es el GCS?</h3>
+        <span class="acc-arrow">⌄</span>
+      </div>
+      <div class="acc-body">
+        <div class="acc-inner">
+          <p style="font-size:.9rem;color:var(--text-sub);margin-bottom:16px;">La Escala de Coma de Glasgow evalúa tres respuestas independientes del paciente. El puntaje total va de un mínimo de <strong style="color:var(--text-main)">3</strong> a un máximo de <strong style="color:var(--text-main)">15</strong>.</p>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;">
+            <div style="background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.2);border-radius:8px;padding:14px;text-align:center;">
+              <div style="font-family:var(--font-head);font-size:1.6rem;font-weight:700;color:var(--gcs-o);margin-bottom:4px;">O</div>
+              <div style="font-family:var(--font-head);font-size:.8rem;font-weight:600;">Apertura<br>Ocular</div>
+              <div style="font-size:.75rem;color:var(--text-sub);margin-top:4px;">Máx. 4 pts</div>
+            </div>
+            <div style="background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.2);border-radius:8px;padding:14px;text-align:center;">
+              <div style="font-family:var(--font-head);font-size:1.6rem;font-weight:700;color:var(--gcs-v);margin-bottom:4px;">V</div>
+              <div style="font-family:var(--font-head);font-size:.8rem;font-weight:600;">Respuesta<br>Verbal</div>
+              <div style="font-size:.75rem;color:var(--text-sub);margin-top:4px;">Máx. 5 pts</div>
+            </div>
+            <div style="background:rgba(244,114,182,.08);border:1px solid rgba(244,114,182,.2);border-radius:8px;padding:14px;text-align:center;">
+              <div style="font-family:var(--font-head);font-size:1.6rem;font-weight:700;color:var(--gcs-m);margin-bottom:4px;">M</div>
+              <div style="font-family:var(--font-head);font-size:.8rem;font-weight:600;">Respuesta<br>Motora</div>
+              <div style="font-size:.75rem;color:var(--text-sub);margin-top:4px;">Máx. 6 pts</div>
+            </div>
+          </div>
+          <div class="info-box">
+            <strong>Posición en el protocolo XABCDE</strong>
+            El GCS se aplica en el componente <strong>D — Déficit Neurológico</strong>, después de haber asegurado X (hemorragia), A (vía aérea), B (ventilación) y C (circulación).
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- O -->
+    <div class="accordion">
+      <div class="acc-header" onclick="toggleAcc(this)">
+        <h3><span class="acc-dot" style="background:var(--gcs-o)"></span>O — Apertura Ocular (máx. 4)</h3>
+        <span class="acc-arrow">⌄</span>
+      </div>
+      <div class="acc-body">
+        <div class="acc-inner">
+          <table class="score-table">
+            <thead><tr><th>Pts</th><th>Criterio</th><th>Descripción clínica</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><span class="score-num c-o">4</span></td>
+                <td><span class="score-label">Espontánea</span></td>
+                <td><span class="score-desc">Abre los ojos al acercarte, sin estímulo verbal ni físico.</span></td>
+              </tr>
+              <tr>
+                <td><span class="score-num c-o">3</span></td>
+                <td><span class="score-label">Al hablar / Voz</span></td>
+                <td><span class="score-desc">Abre los ojos tras instrucción o llamada verbal clara.</span></td>
+              </tr>
+              <tr>
+                <td><span class="score-num c-o">2</span></td>
+                <td><span class="score-label">Al dolor</span></td>
+                <td><span class="score-desc">Solo abre los ojos ante estímulo doloroso central o periférico.</span></td>
+              </tr>
+              <tr>
+                <td><span class="score-num c-o">1</span></td>
+                <td><span class="score-label">Sin respuesta</span></td>
+                <td><span class="score-desc">Ausencia total de apertura ante cualquier estímulo.</span></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="info-box" style="margin-top:12px;">
+            <strong>Clave práctica</strong>
+            Si los ojos ya están abiertos al llegar → O4 (espontánea). No apliques estímulo innecesario. Si hay edema palpebral severo que impide la apertura → documenta O como NT (No Testeable).
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- V -->
+    <div class="accordion">
+      <div class="acc-header" onclick="toggleAcc(this)">
+        <h3><span class="acc-dot" style="background:var(--gcs-v)"></span>V — Respuesta Verbal (máx. 5)</h3>
+        <span class="acc-arrow">⌄</span>
+      </div>
+      <div class="acc-body">
+        <div class="acc-inner">
+          <table class="score-table">
+            <thead><tr><th>Pts</th><th>Criterio</th><th>Descripción clínica</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><span class="score-num c-v">5</span></td>
+                <td><span class="score-label">Orientado</span></td>
+                <td><span class="score-desc">Responde correctamente: persona, lugar, tiempo y evento. Conversación fluida.</span></td>
+              </tr>
+              <tr>
+                <td><span class="score-num c-v">4</span></td>
+                <td><span class="score-label">Confuso</span></td>
+                <td><span class="score-desc">Conversa pero con desorientación en tiempo, espacio o sobre los hechos.</span></td>
+              </tr>
+              <tr>
+                <td><span class="score-num c-v">3</span></td>
+                <td><span class="score-label">Palabras inapropiadas</span></td>
+                <td><span class="score-desc">Pronuncia palabras sueltas sin formar frases con sentido estructurado.</span></td>
+              </tr>
+              <tr>
+                <td><span class="score-num c-v">2</span></td>
+                <td><span class="score-label">Sonidos incomprensibles</span></td>
+                <td><span class="score-desc">Solo emite gemidos, quejidos o murmullos sin palabras articuladas.</span></td>
+              </tr>
+              <tr>
+                <td><span class="score-num c-v">1</span></td>
+                <td><span class="score-label">Sin respuesta</span></td>
+                <td><span class="score-desc">Sin emisión de ningún tipo de sonido vocal.</span></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="warn-box" style="margin-top:12px;">
+            <strong>Diferencia V3 vs V4</strong>
+            En V4 hay intento de conversación aunque con desorientación. En V3 solo se emiten palabras aisladas sin estructura conversacional. En pacientes intubados → V siempre es NT.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- M -->
+    <div class="accordion">
+      <div class="acc-header" onclick="toggleAcc(this)">
+        <h3><span class="acc-dot" style="background:var(--gcs-m)"></span>M — Respuesta Motora (máx. 6)</h3>
+        <span class="acc-arrow">⌄</span>
+      </div>
+      <div class="acc-body">
+        <div class="acc-inner">
+          <table class="score-table">
+            <thead><tr><th>Pts</th><th>Criterio</th><th>Descripción clínica</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><span class="score-num c-m">6</span></td>
+                <td><span class="score-label">Obedece órdenes</span></td>
+                <td><span class="score-desc">Realiza movimientos ante instrucciones verbales simples.</span></td>
+              </tr>
+              <tr>
+                <td><span class="score-num c-m">5</span></td>
+                <td><span class="score-label">Localiza el dolor</span></td>
+                <td><span class="score-desc">Mueve la mano hacia el sitio del estímulo doloroso intentando retirarlo.</span></td>
+              </tr>
+              <tr>
+                <td><span class="score-num c-m">4</span></td>
+                <td><span class="score-label">Retirada al dolor</span></td>
+                <td><span class="score-desc">Retira la extremidad ante el dolor sin localizarlo con precisión.</span></td>
+              </tr>
+              <tr>
+                <td><span class="score-num c-m">3</span></td>
+                <td><span class="score-label">Flexión anormal</span></td>
+                <td><span class="score-desc"><strong style="color:var(--warn)">Decorticación:</strong> flexión de brazos sobre el tórax, extensión de piernas.</span></td>
+              </tr>
+              <tr>
+                <td><span class="score-num c-m">2</span></td>
+                <td><span class="score-label">Extensión anormal</span></td>
+                <td><span class="score-desc"><strong style="color:var(--danger)">Descerebración:</strong> extensión rígida de brazos y piernas con pronación.</span></td>
+              </tr>
+              <tr>
+                <td><span class="score-num c-m">1</span></td>
+                <td><span class="score-label">Sin respuesta</span></td>
+                <td><span class="score-desc">Flaccidez total, sin movimiento ante ningún estímulo.</span></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="info-box" style="margin-top:12px;">
+            <strong>Regla de la mejor respuesta motora</strong>
+            Siempre evalúa la mejor respuesta de cualquier extremidad. Si una extremidad no puede moverse (atrapamiento mecánico, lesión medular conocida), evalúa otra. Documenta siempre la causa.
+          </div>
+          <div class="warn-box">
+            <strong>M5 vs M4 — Distinción crítica</strong>
+            M5 (localiza): la mano se dirige activamente hacia el origen del dolor. M4 (retirada): la extremidad se aleja del dolor sin dirección específica. Esta diferencia puede cambiar el puntaje y la clasificación.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INTERPRETACIÓN -->
+    <div class="accordion">
+      <div class="acc-header" onclick="toggleAcc(this)">
+        <h3><span class="acc-dot" style="background:var(--warn)"></span>Interpretación del Puntaje</h3>
+        <span class="acc-arrow">⌄</span>
+      </div>
+      <div class="acc-body">
+        <div class="acc-inner">
+          <table class="score-table">
+            <thead><tr><th>Puntaje</th><th>Clasificación</th><th>Acción prehospitalaria</th></tr></thead>
+            <tbody>
+              <tr class="interp-row-15">
+                <td><span class="score-num gcs-normal">15</span></td>
+                <td><span class="score-label gcs-normal">Normal</span><div class="score-desc">Alerta y orientado</div></td>
+                <td><span class="score-desc">Monitoreo continuo</span></td>
+              </tr>
+              <tr class="interp-row-13">
+                <td><span class="score-num gcs-leve">13–14</span></td>
+                <td><span class="score-label gcs-leve">Lesión leve</span><div class="score-desc">Leve alteración de conciencia</div></td>
+                <td><span class="score-desc">Reevaluación frecuente</span></td>
+              </tr>
+              <tr class="interp-row-9">
+                <td><span class="score-num gcs-moderado">9–12</span></td>
+                <td><span class="score-label gcs-moderado">Lesión moderada</span><div class="score-desc">Deterioro neurológico significativo</div></td>
+                <td><span class="score-desc">Traslado prioritario</span></td>
+              </tr>
+              <tr class="interp-row-8">
+                <td><span class="score-num gcs-coma">≤ 8</span></td>
+                <td><span class="score-label gcs-coma">Coma</span><div class="score-desc">No protege la vía aérea</div></td>
+                <td><span class="score-desc">⚠️ Intubación urgente</span></td>
+              </tr>
+              <tr class="interp-row-3">
+                <td><span class="score-num gcs-minimo">3</span></td>
+                <td><span class="score-label gcs-minimo">Sin respuesta total</span><div class="score-desc">Mínimo posible</div></td>
+                <td><span class="score-desc">Pronóstico muy grave</span></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="critical-box">
+            <strong>⚠️ Regla crítica</strong>
+            Un puntaje <strong>≤ 8</strong> indica coma e intubación urgente por compromiso de la vía aérea. No esperar mayor deterioro.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PUPILAS -->
+    <div class="accordion">
+      <div class="acc-header" onclick="toggleAcc(this)">
+        <h3><span class="acc-dot" style="background:var(--purple)"></span>Evaluación de Pupilas</h3>
+        <span class="acc-arrow">⌄</span>
+      </div>
+      <div class="acc-body">
+        <div class="acc-inner">
+          <p style="font-size:.875rem;color:var(--text-sub);margin-bottom:14px;">La evaluación pupilar complementa el GCS en la valoración del déficit neurológico. Se evalúan tres características:</p>
+          <div class="pupil-grid">
+            <div class="pupil-card">
+              <div class="pupil-icon">⚪</div>
+              <h4>Tamaño</h4>
+              <p>Normal, midriasis (dilatación) o miosis (contracción)</p>
+            </div>
+            <div class="pupil-card">
+              <div class="pupil-icon">👁️</div>
+              <h4>Simetría</h4>
+              <p>Isocoria (iguales) o anisocoria (desiguales)</p>
+            </div>
+            <div class="pupil-card">
+              <div class="pupil-icon">💡</div>
+              <h4>Reactividad</h4>
+              <p>Se documenta como PIRRL</p>
+            </div>
+          </div>
+          <div class="critical-box">
+            <strong>⚠️ Anisocoria — Señal de alarma</strong>
+            Pupilas de diferente tamaño pueden indicar herniación cerebral o TCE grave. Requiere traslado inmediato y alerta a neurocirugía.
+          </div>
+          <div class="critical-box" style="margin-top:10px;">
+            <strong>⚠️ Midriasis bilateral fija</strong>
+            Ambas pupilas dilatadas y no reactivas en contexto de TCE indica herniación cerebral masiva y compromiso bilateral del III par craneal. Pronóstico muy grave.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REGLAS CAMPO -->
+    <div class="accordion">
+      <div class="acc-header" onclick="toggleAcc(this)">
+        <h3><span class="acc-dot" style="background:var(--accent)"></span>Reglas prácticas en campo</h3>
+        <span class="acc-arrow">⌄</span>
+      </div>
+      <div class="acc-body">
+        <div class="acc-inner">
+          <ul class="rule-list">
+            <li><span class="rule-icon">📝</span><span>Siempre documenta los <strong>tres componentes por separado</strong>: ej. O3 V4 M5 = 12</span></li>
+            <li><span class="rule-icon">🔒</span><span>Si no puedes evaluar un componente por causa física (intubación, edema, fractura mandibular), documenta como <strong>NT (No Testeable)</strong>, nunca como 1.</span></li>
+            <li><span class="rule-icon">📈</span><span>La <strong>tendencia en el tiempo</strong> es tan importante como el valor puntual. Un descenso de ≥ 2 puntos es emergencia neurológica activa.</span></li>
+            <li><span class="rule-icon">🍺</span><span>Nunca atribuyas el deterioro neurológico al alcohol hasta descartar lesión intracraneal.</span></li>
+            <li><span class="rule-icon">👶</span><span>En pacientes con demencia o déficit basal, pregunta a familiares: <em>"¿Está igual que siempre o está peor?"</em></span></li>
+            <li><span class="rule-icon">⚡</span><span>El GCS NO puede aplicarse durante una convulsión activa. Evalúa en fase post-ictal.</span></li>
+            <li><span class="rule-icon">🏆</span><span>Usa siempre la <strong>mejor respuesta motora</strong> disponible, de cualquier extremidad.</span></li>
+            <li><span class="rule-icon">🔵</span><span>GCS normal (15) <strong>NO descarta</strong> lesión intracraneal. El intervalo lúcido del hematoma epidural puede presentarse con GCS 15.</span></li>
+          </ul>
+          <div class="warn-box" style="margin-top:16px;">
+            <strong>Señales de alarma que trascienden el puntaje</strong>
+            Deterioro ≥ 2 puntos → emergencia. Anisocoria → herniación transtentorial. Decorticación (M3) → lesión hemisférica severa. Descerebración (M2) → compromiso de tronco encefálico. Respiración de Cheyne-Stokes → disfunción diencefálica.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NT GUIDE -->
+    <div class="accordion">
+      <div class="acc-header" onclick="toggleAcc(this)">
+        <h3><span class="acc-dot" style="background:var(--text-sub)"></span>Guía de NT — No Testeable</h3>
+        <span class="acc-arrow">⌄</span>
+      </div>
+      <div class="acc-body">
+        <div class="acc-inner">
+          <table class="score-table">
+            <thead><tr><th>Componente</th><th>Causas de NT</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><span class="score-label c-o">O</span></td>
+                <td><span class="score-desc">Edema palpebral severo bilateral, lesión ocular directa que impide apertura física.</span></td>
+              </tr>
+              <tr>
+                <td><span class="score-label c-v">V</span></td>
+                <td><span class="score-desc">Intubación orotraqueal, fractura mandibular, sordera profunda, barrera idiomática severa.</span></td>
+              </tr>
+              <tr>
+                <td><span class="score-label c-m">M</span></td>
+                <td><span class="score-desc">Lesión medular confirmada (tetra/plejia), atrapamiento mecánico, convulsión activa.</span></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="divider"></div>
+          <p style="font-size:.85rem;color:var(--text-sub);">Cuando hay NT, el GCS total no puede calcularse. Documenta siempre la causa. La parálisis por lesión medular es una limitación periférica, no de SNC — no confundas con compromiso encefálico.</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="height:20px;"></div>
+    <div style="text-align:center;padding:20px 0;">
+      <button class="submit-btn primary" style="max-width:300px;" onclick="showSection('practica')">
+        Ir a practicar →
+      </button>
+    </div>
+
+  </section>
+
+  <!-- ═══ PRÁCTICA ═══ -->
+  <section class="section" id="section-practica">
+
+    <div class="practica-header" style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+      <div>
+        <h2>Práctica Clínica</h2>
+        <p>65 casos ordenados por dificultad. Avanza nivel a nivel.</p>
+      </div>
+      <button onclick="resetProgress()" style="background:transparent;border:1px solid var(--border);color:var(--text-muted);padding:6px 12px;border-radius:6px;font-size:.75rem;cursor:pointer;font-family:var(--font-head);white-space:nowrap;flex-shrink:0;margin-top:4px;" title="Reiniciar progreso">↺ Reset</button>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-bar">
+      <div class="stat-card xp">
+        <span class="val" id="stat-xp">0</span>
+        <span class="lbl">XP Total</span>
+      </div>
+      <div class="stat-card str">
+        <span class="val" id="stat-streak">0 🔥</span>
+        <span class="lbl">Racha</span>
+      </div>
+      <div class="stat-card cor">
+        <span class="val" id="stat-correct">0%</span>
+        <span class="lbl">Precisión</span>
+      </div>
+      <div class="stat-card lvl">
+        <span class="val" id="stat-level">N1</span>
+        <span class="lbl">Nivel</span>
+      </div>
+    </div>
+
+    <!-- PROGRESS OVERVIEW -->
+    <div class="progress-section">
+      <h3>Progreso por nivel</h3>
+      <div id="level-progress-container"></div>
+    </div>
+
+    <!-- COMP STATS -->
+    <div class="progress-section">
+      <h3>Precisión por componente</h3>
+      <div id="comp-stats-container">
+        <div style="font-size:.8rem;color:var(--text-muted);padding:8px 0;">Responde casos para ver tu precisión por componente.</div>
+      </div>
+    </div>
+
+    <!-- GRID LEGEND -->
+    <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px;font-size:.75rem;color:var(--text-sub);font-family:var(--font-head);">
+      <span><span style="color:var(--accent)">★</span> 1er intento</span>
+      <span><span style="color:rgba(34,197,94,.6)">✓</span> Con reintento</span>
+      <span><span style="color:var(--danger)">✗</span> Incorrecto</span>
+      <span style="color:var(--blue)">■ Actual</span>
+    </div>
+
+    <!-- LEVEL TABS -->
+    <div class="level-tabs" id="level-tabs">
+      <button class="level-tab active" data-level="1" onclick="selectLevel(1)">🟢 Básico (1–20)</button>
+      <button class="level-tab locked" data-level="2" onclick="selectLevel(2)">🟡 Intermedio (21–40)</button>
+      <button class="level-tab locked" data-level="3" onclick="selectLevel(3)">🔴 Avanzado (41–65)</button>
+    </div>
+
+    <!-- CASES GRID -->
+    <div class="cases-grid" id="cases-grid" role="grid" aria-label="Cuadrícula de casos de práctica"></div>
+
+    <!-- ACTIVE CASE -->
+    <div id="active-case-container"></div>
+
+  </section>
+
+</main>
+
+<footer style="
+  border-top: 1px solid var(--border);
+  margin-top: 40px;
+  padding: 20px 16px;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: .75rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+">
+  <span style="font-family:var(--font-head);font-weight:600;color:var(--text-sub);">GCS Trainer</span>
+  &nbsp;·&nbsp;
+  Desarrollado por <strong style="color:var(--text-sub);">Héctor Carrillo</strong>
+  para el <strong style="color:var(--text-sub);">Diplomado en Rescate FORVID</strong>
+  <br>
+  Basado en PHTLS 10.ª Edición (NAEMT, 2023) &nbsp;·&nbsp; Todos los casos son ficticios, creados con fines educativos
+  <br>
+  <span style="color:var(--text-muted);">© 2026 Héctor Carrillo — Todos los derechos reservados</span>
+</footer>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════════
+
+const CASES = [
+  // ── NIVEL 1 ──────────────────────────────────────────────
+  {
+    id:1, level:1,
+    scene:"Colisión vehicular en vía urbana. Hombre de 35 años sentado en el andén, apoyado contra una pared.",
+    eval:"Al acercarte, el paciente voltea a verte y establece contacto visual sin que digas nada.\nLe preguntas cómo se llama, dónde está y qué pasó. Responde con nombre completo, identifica correctamente que está en la Calle 80 y describe el accidente con claridad.\nLe pides que levante el brazo derecho. Lo hace de inmediato y sin dificultad.",
+    correct:{o:4,v:5,m:6},
+    feedback:"GCS máximo posible (15). El paciente está completamente alerta, orientado y coopera. Aunque puede tener lesiones físicas, su estado neurológico es normal. Continúa con XABCDE y monitorea frecuentemente.",
+    nt:false
+  },
+  {
+    id:2, level:1,
+    scene:"Caída desde escalera en bodega industrial. Hombre de 50 años. Compañeros refieren que 'se golpeó la cabeza'.",
+    eval:"Al llamarlo por su nombre en voz alta, abre los ojos y te mira.\nLe preguntas qué día es. Responde: 'Martes... creo. ¿Dónde estoy exactamente? Vine a trabajar pero no sé bien qué pasó.'\nLe pides que apriete tu mano. Lo hace correctamente con ambas.",
+    correct:{o:3,v:4,m:6},
+    feedback:"La apertura ocular al estímulo verbal (no espontánea) indica cierto compromiso del nivel de conciencia. La confusión verbal es consistente con TCE leve. Requiere reevaluación frecuente: el GCS puede deteriorarse rápidamente.",
+    nt:false
+  },
+  {
+    id:3, level:1,
+    scene:"Hombre de 28 años encontrado inconsciente en vía pública. Sin testigos del evento.",
+    eval:"No abre los ojos de forma espontánea. Lo llamas en voz alta: sin respuesta ocular.\nAplicas presión en el lecho ungueal (estímulo doloroso periférico): abre los ojos.\nNo emite ningún sonido, ni siquiera ante el dolor.\nAnte el estímulo doloroso, retira la extremidad sin que su mano se dirija al sitio del dolor.",
+    correct:{o:2,v:1,m:4},
+    feedback:"GCS ≤ 8. Este paciente no puede proteger su vía aérea. Se requiere manejo avanzado de inmediato. La ausencia de respuesta verbal combinada con apertura solo al dolor indica compromiso neurológico severo.",
+    nt:false
+  },
+  {
+    id:4, level:1,
+    scene:"Mujer de 42 años, accidente en motocicleta. Casco con impacto visible en zona occipital.",
+    eval:"Abre los ojos espontáneamente al aproximarte.\nLe preguntas cómo se llama y qué pasó. Responde: 'Me llamo Ana. Venía por la avenida y me caí. ¿Es grave?' La conversación es coherente, sin desorientación evidente.\nLe pides que mueva los pies. Los mueve sin problema.",
+    correct:{o:4,v:5,m:6},
+    feedback:"GCS 15 a pesar del impacto en el casco. Un GCS normal NO descarta lesión intracraneal. El daño axonal difuso o hemorragias epidurales pueden presentarse con GCS 15 y deteriorarse. Monitoreo neurológico continuo obligatorio.",
+    nt:false
+  },
+  {
+    id:5, level:1,
+    scene:"Niño de 10 años caído desde un árbol. Altura estimada: 3 metros.",
+    eval:"Está llorando cuando llegas. Abre los ojos de forma espontánea.\nAl preguntarle qué le duele responde: 'Me duele la cabeza y el brazo. Caí del árbol de mi casa.'\nLe pides que señale con la mano dónde le duele más. Lo hace claramente.",
+    correct:{o:4,v:5,m:6},
+    feedback:"El llanto en un niño no implica alteración del estado de conciencia; de hecho, es una señal favorable (indica que ventila y está alerta). El mecanismo de lesión requiere inmovilización cervical independientemente del GCS.",
+    nt:false
+  },
+  {
+    id:6, level:1,
+    scene:"Hombre de 60 años encontrado en su vehículo tras impacto trasero. Airbag activado.",
+    eval:"Al golpear la ventana y llamarlo, abre los ojos y te mira con expresión desorientada.\nLe preguntas cómo se llama: responde correctamente. Dónde está: 'En el carro. Iba al mercado.' Qué día es: 'No sé... viernes, tal vez.' (Era miércoles).\nLe pides que baje la ventana. Intenta pero confunde los controles y finalmente lo logra.",
+    correct:{o:4,v:4,m:6},
+    feedback:"La desorientación temporal aislada con nombre y contexto conservados es GCS V4 (confuso). La ejecución de la orden con dificultad no baja el puntaje si finalmente se ejecuta — la clasifica como M6. GCS 14: reevaluación frecuente.",
+    nt:false
+  },
+  {
+    id:7, level:1,
+    scene:"Mujer de 33 años, caída en escaleras de un centro comercial. Testigos refieren que 'se desmayó'.",
+    eval:"No abre los ojos de forma espontánea. Al llamarla en voz alta, abre los ojos brevemente y los cierra de nuevo.\nResponde con voz débil: '¿Qué pasó? Tengo frío.' No sabe dónde está ni qué ocurrió.\nLe pides que apriete tu mano: lo hace débilmente siguiendo la instrucción.",
+    correct:{o:3,v:4,m:6},
+    feedback:"GCS 13. La apertura ocular solo al estímulo verbal indica compromiso del nivel de alerta. La función verbal y motora están relativamente preservadas. Investigar causa del síncope. Reevaluar frecuentemente.",
+    nt:false
+  },
+  {
+    id:8, level:1,
+    scene:"Hombre de 45 años encontrado inconsciente tras explosión en obra de construcción.",
+    eval:"No abre los ojos espontáneamente ni al llamarlo.\nAplicas presión supraorbital (estímulo doloroso central): abre los ojos.\nEmite gemidos y quejidos sin articular palabras.\nAnte el estímulo doloroso, su mano se dirige hacia el sitio del dolor intentando retirar tu mano.",
+    correct:{o:2,v:2,m:5},
+    feedback:"GCS 9, límite inferior de la lesión moderada. La localización del dolor (M5) es relativamente preservada. Sin embargo, apertura solo al dolor y ausencia de lenguaje articulado indican compromiso significativo. Traslado prioritario con monitoreo continuo.",
+    nt:false
+  },
+  {
+    id:9, level:1,
+    scene:"Ciclista de 22 años impactado por vehículo. No portaba casco.",
+    eval:"Paciente con los ojos abiertos al llegar, mirando al techo.\nLe hablas: no responde con palabras. Emite un gemido cuando lo mueves.\nAl aplicar presión en el lecho ungueal, retira el brazo bruscamente, pero no dirige la mano hacia el sitio del dolor.",
+    correct:{o:4,v:2,m:4},
+    feedback:"Los ojos pueden estar abiertos (O4) y el GCS puede ser bajo si verbal y motor están comprometidos. La apertura ocular espontánea no equivale a estar alerta. GCS 10: traslado prioritario y reevaluación continua.",
+    nt:false
+  },
+  {
+    id:10, level:1,
+    scene:"Mujer de 55 años, pasajera de bus en accidente de tránsito. Encontrada inconsciente en su silla.",
+    eval:"No responde a ningún estímulo verbal. No abre los ojos espontáneamente.\nAplicas presión supraorbital: abre los ojos con mueca de dolor.\nNo emite ningún sonido.\nAnte el estímulo doloroso, observas flexión de los brazos sobre el tórax con extensión de las piernas (postura de decorticación).",
+    correct:{o:2,v:1,m:3},
+    feedback:"GCS 6. La postura de decorticación indica lesión a nivel del tracto corticoespinal por encima del mesencéfalo (lesión hemisférica o subcortical). Señal de compromiso neurológico severo. GCS ≤ 8: manejo avanzado de vía aérea obligatorio.",
+    nt:false
+  },
+  {
+    id:11, level:1,
+    scene:"Hombre de 38 años, electrocutado en trabajo en altura. Cayó aproximadamente 2 metros.",
+    eval:"Abre los ojos espontáneamente y te sigue con la mirada.\nLe preguntas su nombre: responde correctamente. Dónde está: 'En la obra. Me pegó la corriente.' Qué día es: lo dice correctamente.\nLe pides que cierre y abra los puños: lo hace sin dificultad.",
+    correct:{o:4,v:5,m:6},
+    feedback:"GCS 15. Recuerda que la electrocución puede causar arritmias diferidas, rabdomiólisis y lesión neurológica tardía. El GCS normal no descarta la gravedad del evento. Monitoreo cardíaco continuo obligatorio.",
+    nt:false
+  },
+  {
+    id:12, level:1,
+    scene:"Adolescente de 16 años atropellado. Encontrado en la vía, sin pérdida de conciencia presenciada.",
+    eval:"Está llorando y agitado. Abre los ojos espontáneamente.\nResponde a tus preguntas: sabe su nombre, dónde vive, qué pasó. Dice: 'Un carro me pegó, iba cruzando.'\nLe pides que mueva los dedos de los pies: los mueve con normalidad.",
+    correct:{o:4,v:5,m:6},
+    feedback:"La agitación y el llanto son compatibles con GCS 15 siempre que la orientación y función motora sean normales. En pediátricos, adapta las preguntas a la edad. El mecanismo requiere evaluación de trauma abdominal y musculoesquelético.",
+    nt:false
+  },
+  {
+    id:13, level:1,
+    scene:"Mujer de 70 años, caída en baño de hogar. La familia refiere que 'estaba bien' hace 30 minutos.",
+    eval:"Está en el suelo, no abre los ojos. Al llamarla en voz alta, abre los ojos y te mira con expresión de confusión.\nLe preguntas cómo se llama: da un nombre. Dónde está: 'En mi casa... creo.' Qué le pasó: 'Caí, pero no sé bien... me duele la cabeza.'\nLe pides que levante la mano derecha: lo hace lentamente pero de forma correcta.",
+    correct:{o:3,v:4,m:6},
+    feedback:"En adultos mayores, caídas con GCS 13-14 son de alto riesgo por anticoagulantes frecuentes, atrofia cerebral que facilita hematomas subdurales y menor reserva fisiológica. El contexto clínico eleva la prioridad de traslado.",
+    nt:false
+  },
+  {
+    id:14, level:1,
+    scene:"Hombre de 29 años, herida por arma de fuego en región temporal izquierda.",
+    eval:"No abre los ojos espontáneamente ni al estímulo verbal.\nAplicas presión en lecho ungueal: abre los ojos con mueca de dolor.\nEmite gemidos continuos sin articular ninguna palabra.\nAnte el estímulo doloroso, observas extensión rígida de brazos y piernas con pronación (postura de descerebración).",
+    correct:{o:2,v:2,m:2},
+    feedback:"La postura de descerebración indica lesión a nivel del tronco encefálico (mesencéfalo o protuberancia), de peor pronóstico que la decorticación. GCS 6 con herida por arma de fuego en cráneo: protocolo de trauma mayor, manejo avanzado de vía aérea urgente.",
+    nt:false
+  },
+  {
+    id:15, level:1,
+    scene:"Mujer de 25 años, volcamiento de vehículo. Encontrada fuera del vehículo.",
+    eval:"Ojos cerrados. No responde a estímulo verbal.\nAplicas presión supraorbital: no abre los ojos.\nNo emite ningún sonido, ni siquiera ante el dolor.\nAnte estímulo doloroso: ningún movimiento. Extremidades flácidas.",
+    correct:{o:1,v:1,m:1},
+    feedback:"GCS 3 es el puntaje mínimo posible. No indica necesariamente muerte biológica, pero sí el compromiso neurológico más grave evaluable. Manejo avanzado de vía aérea inmediato, RCP si aplica. Verifica signos de vida antes de catalogar como paro.",
+    nt:false
+  },
+  {
+    id:16, level:1,
+    scene:"Hombre de 48 años, trauma craneal por caída de objeto en bodega (poste metálico).",
+    eval:"Abre los ojos espontáneamente.\nLe hablas y responde: 'Sí, me llamo Jorge. Estoy en la bodega. Algo me cayó encima.' Conversación fluida y coherente.\nLe pides que te apriete las manos: lo hace con fuerza.",
+    correct:{o:4,v:5,m:6},
+    feedback:"GCS 15 inmediatamente post-impacto no descarta lesión. El 'intervalo lúcido' es clásico del hematoma epidural: el paciente puede estar alerta brevemente y deteriorarse con rapidez. Monitoreo neurológico estricto y traslado para evaluación por imágenes.",
+    nt:false
+  },
+  {
+    id:17, level:1,
+    scene:"Niña de 7 años, pasajera en accidente de tránsito. Madre refiere que 'perdió el conocimiento por un momento'.",
+    eval:"Está despierta, con ojos abiertos espontáneamente.\nLlora y dice: 'Quiero a mi mamá. Me duele la cabeza.' Sabe su nombre y dónde estaba yendo.\nLe pides que levante los brazos: los levanta.",
+    correct:{o:4,v:5,m:6},
+    feedback:"GCS 15, pero hay antecedente de pérdida de conciencia. Esto eleva significativamente el riesgo, especialmente en niños. La conmoción cerebral puede manifestarse con pérdida transitoria y GCS normal posterior. Traslado para evaluación pediátrica urgente.",
+    nt:false
+  },
+  {
+    id:18, level:1,
+    scene:"Hombre de 52 años, trauma facial severo tras explosión. Hemorragia facial activa.",
+    eval:"Abre los ojos espontáneamente, aunque con dificultad por el edema periorbital.\nEmite palabras sueltas: 'Duele... fuego...' No forma frases completas con sentido.\nLe pides que mueva la mano: lo hace correctamente.",
+    correct:{o:4,v:3,m:6},
+    feedback:"La diferencia entre V3 y V4: en V4 el paciente forma frases y conversa aunque con desorientación; en V3 solo emite palabras aisladas sin estructura. El trauma facial no impide evaluar la apertura ocular si hay apertura espontánea visible.",
+    nt:false
+  },
+  {
+    id:19, level:1,
+    scene:"Mujer de 67 años, caída de su propia altura en vía pública. Transeúntes refieren que 'se quedó tiesa un momento' antes de caer.",
+    eval:"No abre los ojos espontáneamente. Al llamarla, abre los ojos y te mira.\nLe preguntas cómo se llama: da su nombre correctamente. Dónde está: 'En la calle, salí a caminar.' Qué pasó: 'No sé, de repente estaba en el suelo.'\nLe pides que apriete tu mano: lo hace.",
+    correct:{o:3,v:4,m:6},
+    feedback:"La descripción de 'quedarse tiesa' sugiere posible episodio convulsivo (fase tónica). La amnesia del evento en contexto post-convulsivo es compatible con GCS V4 (confusión sobre el evento). El GCS debe reevaluarse: en período post-ictal puede mejorar progresivamente.",
+    nt:false
+  },
+  {
+    id:20, level:1,
+    scene:"Hombre de 35 años, caída de bicicleta de montaña. Casco con fractura visible.",
+    eval:"Está consciente, ojos abiertos espontáneamente.\nResponde preguntas: 'Me llamo Sebastián. Iba por la trocha y me fui de frente.' Cuando le preguntas el día, lo dice bien.\nLe pides que levante los pulgares: los levanta.",
+    correct:{o:4,v:5,m:6},
+    feedback:"Casco fracturado es un marcador de impacto de alta energía. A pesar del GCS 15, la fractura del casco indica que se absorbió una fuerza significativa. Palpa el cráneo buscando hundimientos, evalúa otorragia o rinorragia y traslada para evaluación.",
+    nt:false
+  },
+
+  // ── NIVEL 2 ──────────────────────────────────────────────
+  {
+    id:21, level:2,
+    scene:"Hombre de 40 años, accidente de tránsito. Fractura mandibular evidente con hemorragia oral activa.",
+    eval:"Abre los ojos espontáneamente y sigue tus movimientos con la mirada.\nIntenta hablar pero la fractura mandibular impide la articulación. Solo se escuchan sonidos guturales y murmullos.\nLe pides que levante la mano: la levanta correctamente.",
+    hint:"⚠️ Considera si la limitación verbal es de origen neurológico o mecánico.",
+    correct:{o:4,v:'NT',m:6},
+    feedback:"Este caso ilustra una limitación importante del GCS: cuando un componente no puede evaluarse por causa física (fractura mandibular, intubación), se documenta como NT (No Testeable), no como 1. Asignar V1 sería incorrecto porque implicaría compromiso neurológico cuando en realidad es limitación mecánica.",
+    nt:true, ntComp:'v'
+  },
+  {
+    id:22, level:2,
+    scene:"Mujer de 44 años, intoxicación por monóxido de carbono en incendio estructural.",
+    eval:"Abre los ojos espontáneamente pero la mirada es vaga, sin fijación clara.\nLe hablas: emite frases pero con incoherencia marcada. Dice: 'El humo... mi casa está... no, el perro salió.' No puede seguir una línea de pensamiento.\nLe pides que te apriete la mano: responde a la instrucción, aunque el apretón es débil.",
+    correct:{o:4,v:4,m:6},
+    feedback:"La intoxicación por CO puede producir confusión sin deterioro motor temprano. GCS 14 en este contexto es señal de alarma porque el CO puede deteriorarse rápidamente. La fuerza del apretón no modifica la puntuación M si el paciente ejecuta la instrucción. Oxígeno a alto flujo inmediato.",
+    nt:false
+  },
+  {
+    id:23, level:2,
+    scene:"Hombre de 55 años, caída de andamio desde 4 metros. Trauma craneal y torácico confirmado.",
+    eval:"Al llegar, ojos abiertos, mirando al cielo.\nAl hablarle, no responde verbalmente.\nLe aplicas presión supraorbital: no abre los ojos (ya estaban abiertos).\nEmite gemidos cuando lo movilizas.\nAl aplicar presión en el esternón, su mano se mueve hacia el sitio del dolor intentando retirar tu mano.",
+    hint:"⚠️ ¿Cómo evalúas apertura ocular cuando los ojos ya están abiertos?",
+    correct:{o:4,v:2,m:5},
+    feedback:"Cuando los ojos ya están abiertos al llegar, la apertura es espontánea (O4). No es necesario aplicar estímulo si ya se observa apertura. M5 vs M4 es crítico: M5 implica que la mano se dirige activamente hacia el origen del dolor; M4 es retirada inespecífica. GCS 11: traslado prioritario.",
+    nt:false
+  },
+  {
+    id:24, level:2,
+    scene:"Mujer de 31 años, policontundida en riña. Múltiples golpes en cabeza y tronco.",
+    eval:"No abre los ojos espontáneamente. Al llamarla, abre los ojos.\nLe preguntas cómo se llama: responde su nombre. Dónde está: 'Afuera... en la calle.' Qué pasó: 'Me pegaron.' Todas las respuestas son correctas y coherentes.\nLe pides que mueva los pies: los mueve correctamente.",
+    correct:{o:3,v:5,m:6},
+    feedback:"Es posible tener O3 con V5: el paciente puede necesitar estímulo verbal para abrir los ojos y aun así estar perfectamente orientado al despertar. La apertura ocular evalúa el umbral de arousal (alerta), no la calidad del contenido de la conciencia.",
+    nt:false
+  },
+  {
+    id:25, level:2,
+    scene:"Hombre de 62 años, accidente en moto. Trauma craneoencefálico con hematoma retroauricular visible (Signo de Battle).",
+    eval:"Abre los ojos espontáneamente.\nAl hablarle responde con palabras aisladas: 'Cabeza... duele... casa...' Sin coherencia entre ellas.\nLe pides instrucciones motoras: no sigue instrucciones. Al aplicar presión en el esternón, retira el brazo sin dirigirlo hacia el dolor.",
+    correct:{o:4,v:3,m:4},
+    feedback:"El Signo de Battle (hematoma retroauricular) es indicador tardío de fractura de base de cráneo. GCS 11 con este hallazgo indica lesión intracraneal significativa. La diferencia entre V3 y V4: en V3 no hay conversación posible, solo palabras sueltas; en V4 hay intento de conversación con desorientación.",
+    nt:false
+  },
+  {
+    id:26, level:2,
+    scene:"Adolescente de 14 años, trauma craneal en accidente deportivo (caída jugando fútbol americano, sin casco).",
+    eval:"Ojos abiertos espontáneamente. Mira alrededor con expresión confundida.\nDice: '¿Qué pasó? ¿Dónde está mi equipo?' Sabe su nombre pero no recuerda el evento ni la secuencia de lo ocurrido.\nLe pides que levante los brazos: los levanta.",
+    correct:{o:4,v:4,m:6},
+    feedback:"La amnesia post-traumática (no recordar el evento) es marcador de conmoción cerebral. Aunque GCS 14 es 'leve', el protocolo deportivo prohíbe el retorno al juego ese día. En prehospitalaria: inmovilización cervical, traslado para evaluación neurológica completa.",
+    nt:false
+  },
+  {
+    id:27, level:2,
+    scene:"Mujer de 78 años, encontrada en el suelo de su habitación. No se sabe cuánto tiempo lleva ahí.",
+    eval:"No abre los ojos espontáneamente. Al llamarla, no abre los ojos.\nAplicas presión en el lecho ungueal: abre los ojos lentamente.\nEmite palabras sueltas incoherentes: 'No... casa... frío...'\nAnte el estímulo doloroso, flexiona los brazos sobre el tórax con rigidez (decorticación).",
+    correct:{o:2,v:3,m:3},
+    feedback:"GCS exactamente 8. Este es el umbral crítico: ≤ 8 indica coma y compromiso de la vía aérea. La decorticación en una adulta mayor con tiempo de evolución desconocido sugiere evento cerebrovascular o TCE con hemorragia. No retrasar el manejo de vía aérea por obtener más información.",
+    nt:false
+  },
+  {
+    id:28, level:2,
+    scene:"Hombre de 33 años, encontrado inconsciente en vehículo accidentado. Ventanas cerradas, motor encendido. Sospecha de intoxicación por CO.",
+    eval:"No abre los ojos espontáneamente. Al llamarlo, no abre los ojos.\nAplicas presión supraorbital: abre los ojos con mueca.\nEmite gemidos ante el dolor.\nAnte el dolor, extiende brazos y piernas rígidamente (descerebración).",
+    correct:{o:2,v:2,m:2},
+    feedback:"GCS 6 con postura de descerebración indica compromiso del tronco encefálico. En intoxicación por CO: oxígeno a alto flujo (100%) y ventilación asistida. La descerebración simétrica puede deberse a hipoxia cerebral difusa. Manejo avanzado de vía aérea urgente.",
+    nt:false
+  },
+  {
+    id:29, level:2,
+    scene:"Mujer de 19 años, caída de caballo. Impacto de casco contra roca.",
+    eval:"Al llegar, ojos cerrados. Al llamarla, los abre.\nLe preguntas su nombre: lo da correctamente. Dónde está: 'En el campo. Estaba montando.' Qué pasó: 'El caballo se detuvo de repente y caí. Me golpeé la cabeza.'\nLe pides que mueva las manos: las mueve.",
+    correct:{o:3,v:5,m:6},
+    feedback:"GCS 14 (O3 en lugar de O4 por no tener apertura espontánea). A pesar del relato coherente, la apertura solo al estímulo verbal indica disminución del nivel de alerta. La diferencia entre O3 y O4 puede parecer sutil pero tiene implicación clínica real.",
+    nt:false
+  },
+  {
+    id:30, level:2,
+    scene:"Hombre de 50 años, encontrado en vía pública. Sin testigos. Signos de trauma en cuero cabelludo.",
+    eval:"Ojos abiertos espontáneamente, mirando al frente sin fijar la mirada en ti.\nAl hablarle, no responde. Ni siquiera ante llamado en voz alta.\nAl aplicar estímulo doloroso en el esternón, no hay respuesta motora. Extremidades completamente flácidas.",
+    hint:"⚠️ Los ojos abiertos no implican apertura funcional. Evalúa la mirada y la respuesta global.",
+    correct:{o:4,v:1,m:1},
+    feedback:"Los ojos abiertos dan O4, pero la ausencia de respuesta verbal y motora indica coma profundo (GCS 6). La apertura ocular espontánea puede persistir en estados vegetativos. GCS ≤ 8: manejo de vía aérea urgente.",
+    nt:false
+  },
+  {
+    id:31, level:2,
+    scene:"Mujer de 26 años, herida por arma blanca en cuello. Hemorragia controlada. Posible compromiso vascular.",
+    eval:"Abre los ojos espontáneamente pero con expresión de angustia.\nHabla en voz muy baja pero de forma coherente: 'Me apuñalaron. Me duele mucho el cuello. ¿Voy a morir?'\nLe pides que apriete tu mano: lo hace.",
+    correct:{o:4,v:5,m:6},
+    feedback:"El tono de voz bajo no modifica la puntuación verbal si el contenido es orientado. GCS evalúa la calidad de la respuesta, no el volumen. GCS 15 con herida penetrante en cuello: riesgo de compromiso vascular (carótida, yugular) y vía aérea por hematoma expansivo muy alto.",
+    nt:false
+  },
+  {
+    id:32, level:2,
+    scene:"Hombre de 41 años, trauma por aplastamiento. Extremidades inferiores atrapadas bajo maquinaria.",
+    eval:"Abre los ojos espontáneamente con expresión de dolor extremo.\nResponde preguntas con claridad: 'Soy Andrés, estoy en la fábrica. La máquina me atrapó las piernas. Ayúdenme.'\nLe pides que mueva los brazos: los mueve con facilidad. No puede mover las piernas (atrapadas bajo la maquinaria — limitación mecánica, no neurológica).",
+    hint:"⚠️ Distingue entre limitación neurológica y limitación mecánica para la respuesta motora.",
+    correct:{o:4,v:5,m:6},
+    feedback:"En el GCS siempre evalúas la mejor respuesta motora del paciente, usando la extremidad más accesible y funcional. Si las piernas están atrapadas, evalúas los brazos. No interpretes la imposibilidad de mover las piernas como M reducido si hay causa mecánica obvia.",
+    nt:false
+  },
+  {
+    id:33, level:2,
+    scene:"Mujer de 37 años, trauma craneal en accidente de tránsito. Refiere amnesia del evento.",
+    eval:"Abre los ojos espontáneamente.\nDice su nombre correctamente. Sabe que está en la vía, que hubo un accidente. No recuerda nada desde 'antes de subir al bus'. Le preguntas el año y el mes: los dice bien.\nLe pides que doble las rodillas: las dobla.",
+    correct:{o:4,v:4,m:6},
+    feedback:"La amnesia post-traumática del evento clasifica como V4 (confuso) en contexto de trauma porque hay desorientación sobre el evento mismo. Si el paciente recuerda con coherencia todos los elementos (persona, lugar, tiempo y evento), es V5.",
+    nt:false
+  },
+  {
+    id:34, level:2,
+    scene:"Hombre de 58 años, ahogamiento parcial en piscina. Rescatado por bañistas.",
+    eval:"Al sacarlo del agua, no abre los ojos espontáneamente. Al llamarlo en voz alta, abre los ojos.\nTose y emite palabras sueltas: 'Agua... no...'\nLe pides que apriete tu mano: no responde a la instrucción. Al aplicar presión en el esternón, retira el brazo sin localizar.",
+    correct:{o:3,v:3,m:4},
+    feedback:"En el ahogamiento, la hipoxia cerebral puede producir deterioro neurológico que va mejorando con la oxigenación. GCS 10 en el rescate inmediato puede mejorar o deteriorarse. Oxígeno suplementario, ventilación asistida si es necesario. Reevaluar el GCS cada pocos minutos.",
+    nt:false
+  },
+  {
+    id:35, level:2,
+    scene:"Mujer de 48 años, accidente de tránsito de alta energía. Politrauma confirmado.",
+    eval:"No abre los ojos espontáneamente ni al estímulo verbal.\nAplicas presión supraorbital: abre los ojos.\nAnte el dolor emite gemidos.\nLa respuesta motora al estímulo doloroso es localización: su mano se dirige hacia donde aplicas el estímulo.",
+    correct:{o:2,v:2,m:5},
+    feedback:"GCS 9, un punto por encima del umbral de coma. La localización del dolor (M5) es relativamente favorable. Traslado prioritario. Si el GCS desciende a ≤ 8, manejo avanzado de vía aérea obligatorio. Monitoreo continuo.",
+    nt:false
+  },
+  {
+    id:36, level:2,
+    scene:"Hombre de 22 años, trauma craneal en riña. Compañero refiere que 'se fue al piso y no despertaba' por varios minutos.",
+    eval:"Al llegar, abre los ojos espontáneamente y te mira.\nLe hablas: responde con frases cortas pero coherentes. 'Me golpearon en la cabeza. Estoy en la calle.' Sabe el día de la semana.\nLe pides que cierre el puño: lo cierra.",
+    correct:{o:4,v:5,m:6},
+    feedback:"GCS 15 al momento de la evaluación. Sin embargo, el antecedente de pérdida de conciencia previa indica posible lesión intracraneal con 'intervalo lúcido'. Traslado para evaluación por imágenes, sin importar el GCS actual.",
+    nt:false
+  },
+  {
+    id:37, level:2,
+    scene:"Mujer de 52 años, trauma craneal en accidente de bus. Antecedente conocido de enfermedad de Alzheimer.",
+    eval:"Abre los ojos espontáneamente.\nLe hablas: emite frases pero con contenido incoherente: 'Tengo que ir a buscar a los niños al colegio... el bus... ¿dónde está mi bolsa?'\nLe pides que levante la mano derecha: la levanta.",
+    hint:"⚠️ El GCS evalúa el estado actual, no el estado basal. ¿Cómo manejas la confusión en un paciente con demencia preexistente?",
+    correct:{o:4,v:4,m:6},
+    feedback:"En pacientes con demencia, el GCS debe interpretarse comparándolo con el estado basal. Si la familia refiere que 'siempre está así', podría sobreestimarse el compromiso agudo. Siempre pregunta: '¿Está igual que siempre o está peor?'",
+    nt:false
+  },
+  {
+    id:38, level:2,
+    scene:"Hombre de 45 años, trauma facial masivo. Edema periorbital que impide apertura ocular bilateralmente.",
+    eval:"Imposible evaluar apertura ocular por edema palpebral completo bilateral.\nResponde preguntas: 'Soy Carlos, estoy en la obra, me cayó algo en la cara.' Orientado en los tres parámetros.\nLe pides que levante los brazos: los levanta.",
+    hint:"⚠️ ¿Qué haces cuando físicamente no puedes evaluar un componente?",
+    correct:{o:'NT',v:5,m:6},
+    feedback:"El edema palpebral que impide físicamente la apertura ocular hace que O sea NT. Documenta siempre la razón. El estado neurológico se infiere de los otros dos componentes: V5 M6 con causa mecánica para O sugiere estado neurológico relativamente preservado. No asumas O1 cuando hay causa física.",
+    nt:true, ntComp:'o'
+  },
+  {
+    id:39, level:2,
+    scene:"Mujer de 34 años, trauma craneal severo en accidente de motocicleta. Sin casco.",
+    eval:"No abre los ojos espontáneamente. Al llamarla, no abre los ojos.\nAplicas presión en lecho ungueal: abre los ojos.\nEmite palabras sueltas sin coherencia: 'No... déjame... casa...'\nAnte el dolor central (presión supraorbital), sus brazos se flexionan sobre el pecho rígidamente con extensión de miembros inferiores.",
+    correct:{o:2,v:3,m:3},
+    feedback:"GCS exactamente en el umbral de 8. La decorticación indica lesión hemisférica o subcortical severa. Manejo avanzado de vía aérea urgente. Esto ilustra que incluso con palabras (V3) y apertura al dolor (O2), el GCS puede estar en zona de coma si la respuesta motora es patológica.",
+    nt:false
+  },
+  {
+    id:40, level:2,
+    scene:"Hombre de 66 años, caída en domicilio. Familiar refiere que 'lleva horas en el suelo sin poder moverse'.",
+    eval:"Abre los ojos al llamarlo.\nLe hablas: responde con palabras coherentes. 'Caí al ir al baño. No pude levantarme. Llevo mucho tiempo así, tengo frío.' Orientado en persona y evento, aunque desorientado en tiempo (no sabe la hora ni el día).\nLe pides que apriete tu mano: lo hace.",
+    correct:{o:3,v:4,m:6},
+    feedback:"En un paciente que lleva horas en el suelo, la desorientación temporal puede deberse a la situación (no al trauma) y la apertura al estímulo verbal puede ser por cansancio. Sin embargo, en prehospitalaria trata como compromiso neurológico hasta demostrar lo contrario. Busca hipotermia, rabdomiólisis y deshidratación.",
+    nt:false
+  },
+
+  // ── NIVEL 3 ──────────────────────────────────────────────
+  {
+    id:41, level:3,
+    scene:"Hombre de 55 años, trauma craneal bilateral, accidente de tránsito de alta energía. Intubado en campo por primer respondedor antes de tu llegada.",
+    eval:"Paciente ya intubado. Ojos abiertos espontáneamente.\nNo puede emitir sonido por el tubo orotraqueal.\nAnte estímulo doloroso en el esternón, extiende ambos brazos rígidamente (descerebración).",
+    hint:"⚠️ ¿Cómo documenta el GCS en un paciente intubado?",
+    correct:{o:4,v:'NT',m:2},
+    feedback:"En pacientes intubados, V siempre es NT. No asignes V1. El puntaje total no puede calcularse con un componente NT. La descerebración (M2) sola ya indica coma. Algunos sistemas usan el modificador 'T' (Tube): GCS = O4 V(T) M2.",
+    nt:true, ntComp:'v'
+  },
+  {
+    id:42, level:3,
+    scene:"Mujer de 29 años, trauma craneal con sospecha de lesión medular cervical alta (C3-C4). No mueve brazos ni piernas.",
+    eval:"Abre los ojos espontáneamente y te sigue con la mirada.\nDice: 'No siento nada de la cintura para abajo. No puedo mover los brazos.' Orientada en persona, lugar, tiempo y evento.\nNo puede mover extremidades (tetraparesia por sospecha de lesión medular).",
+    hint:"⚠️ ¿La parálisis por lesión medular afecta el componente M del GCS?",
+    correct:{o:4,v:5,m:'NT'},
+    feedback:"Este caso requiere distinguir entre SNC (que evalúa el GCS) y lesión medular (que afecta la vía motora periférica). Si la parálisis se debe claramente a lesión medular y no a compromiso encefálico, M es NT. Una paciente con V5 y O4 probablemente tiene función cortical preservada.",
+    nt:true, ntComp:'m'
+  },
+  {
+    id:43, level:3,
+    scene:"Hombre de 48 años, TCE severo. Evaluación inicial GCS 7. Durante el traslado se reporta que 'abrió los ojos y dijo algo'. Evalúa el estado actual.",
+    eval:"Abre los ojos solo al dolor.\nEmite gemidos ante el dolor.\nAnte el estímulo doloroso, retira la extremidad sin localizar.",
+    correct:{o:2,v:2,m:4},
+    feedback:"GCS actual = 8 (O2 V2 M4). Si el GCS previo era 7 y el actual es 8, hay leve mejoría de un punto. Sin embargo, sigue en zona de coma (≤ 8). La tendencia del GCS en el tiempo es tan importante como el valor puntual. La mejora de 7 a 8 es alentadora pero no cambia la necesidad de manejo avanzado.",
+    nt:false
+  },
+  {
+    id:44, level:3,
+    scene:"Mujer de 60 años, accidente de tránsito. Hablante nativa de coreano. No habla español.",
+    eval:"Abre los ojos espontáneamente y te mira con expresión de angustia.\nHabla en coreano de forma aparentemente fluida. No puedes evaluar si está orientada.\nLe pides que apriete tu mano con gestos: lo hace correctamente.",
+    hint:"⚠️ ¿Cómo evalúas el componente V cuando hay barrera idiomática?",
+    correct:{o:4,v:'NT',m:6},
+    feedback:"La barrera idiomática es una limitación reconocida del GCS. Si no puedes evaluar la orientación por idioma, documenta V como NT con la causa. Algunos profesionales asignan V4 por precaución cuando no pueden confirmar orientación, lo cual es aceptable si se documenta la razón. El componente M puede evaluarse con señas.",
+    nt:true, ntComp:'v'
+  },
+  {
+    id:45, level:3,
+    scene:"Hombre de 35 años, trauma craneal. Evaluación inicial GCS 14. A los 10 minutos de traslado, deja de responder preguntas y solo emite gemidos. Evalúa estado actual.",
+    eval:"Abre los ojos al estímulo verbal.\nEmite gemidos ante el dolor. No articula palabras.\nAnte el estímulo doloroso, localiza el sitio del dolor.",
+    correct:{o:3,v:2,m:5},
+    feedback:"Deterioro de 4 puntos en 10 minutos (de GCS 14 a 10). Una caída de ≥ 2 puntos en el GCS es indicador de deterioro clínicamente significativo. Posibles causas: hematoma epidural en expansión, edema cerebral progresivo. Aumenta velocidad de traslado, prepara manejo avanzado de vía aérea.",
+    nt:false
+  },
+  {
+    id:46, level:3,
+    scene:"Mujer de 22 años, trauma craneal con crisis convulsiva activa al arribo. Convulsión tónico-clónica generalizada.",
+    eval:"La paciente está en convulsión activa. Sus ojos están desviados hacia arriba.\nNo emite palabras. Solo ruidos durante la convulsión.\nTiene movimientos tónico-clónicos generalizados.",
+    hint:"⚠️ ¿Puedes aplicar el GCS durante la convulsión activa?",
+    correct:{o:'NT',v:'NT',m:'NT'},
+    feedback:"El GCS no puede aplicarse durante una convulsión activa. Los movimientos son de origen ictal, no respuestas evaluables. Documenta: 'GCS no evaluable — crisis convulsiva activa.' Evalúa y aplica el GCS DESPUÉS de que cese la convulsión, en fase post-ictal. Prioridad: proteger vía aérea, posición lateral de seguridad.",
+    nt:true, ntComp:'all'
+  },
+  {
+    id:47, level:3,
+    scene:"Hombre de 70 años, caída en domicilio. Antecedente de ACV previo con hemiparesia izquierda residual (el brazo izquierdo no se mueve desde antes).",
+    eval:"Abre los ojos espontáneamente.\nResponde preguntas: orientado en persona, lugar y tiempo.\nLe pides que levante el brazo derecho: lo levanta. El brazo izquierdo no se mueve (paresia previa conocida).",
+    hint:"⚠️ Recuerda la regla de la mejor respuesta motora y los déficits basales.",
+    correct:{o:4,v:5,m:6},
+    feedback:"En pacientes con déficits neurológicos previos, evalúas siempre la mejor respuesta motora disponible. La hemiparesia del brazo izquierdo es basal (no aguda), así que evalúas el brazo derecho. GCS 15 en este contexto es el máximo esperable dado el déficit basal. Documenta siempre los déficits previos.",
+    nt:false
+  },
+  {
+    id:48, level:3,
+    scene:"Mujer de 44 años, politrauma en accidente de tránsito. Evaluación en escena ruidosa y caótica. Al llamarla abre los ojos.",
+    eval:"Abre los ojos al llamarla.\nLogras escuchar: 'Tengo dolor en el pecho... el carro...' Parece orientada pero no puedes confirmar todos los parámetros por el ruido.\nLe pides que apriete tu mano: lo hace.",
+    correct:{o:3,v:4,m:6},
+    feedback:"Cuando las condiciones del ambiente limitan la evaluación, asigna la puntuación más conservadora que puedas justificar y documenta la limitación (ruido ambiental). V4 es conservador porque aunque la paciente parece orientada, no pudiste confirmar todos los parámetros. Nunca asumas el mejor puntaje si no puedes confirmarlo.",
+    nt:false
+  },
+  {
+    id:49, level:3,
+    scene:"Hombre de 39 años, trauma craneal. Presenta respuesta motora asimétrica: brazo derecho localiza el dolor, brazo izquierdo presenta extensión anormal.",
+    eval:"Abre los ojos solo al dolor.\nEmite gemidos sin palabras.\nBrazo derecho: localiza el dolor (M5). Brazo izquierdo: extensión anormal (M2).",
+    hint:"⚠️ En respuesta motora asimétrica, ¿cuál extremidad usas para la puntuación?",
+    correct:{o:2,v:2,m:5},
+    feedback:"La regla del GCS es usar la mejor respuesta motora. Sin embargo, la asimetría tiene alto valor pronóstico: documenta AMBAS respuestas por separado (M5 derecha / M2 izquierda). La extensión anormal unilateral puede indicar herniación cerebral con compresión del tracto corticoespinal.",
+    nt:false
+  },
+  {
+    id:50, level:3,
+    scene:"Mujer de 55 años, accidente industrial. Sospecha de fractura de base de cráneo. Presenta ojo de mapache bilateral y rinolicuorrea.",
+    eval:"No abre los ojos espontáneamente. Al llamarla no responde.\nAplicas presión supraorbital con precaución: abre los ojos.\nEmite palabras sueltas: 'No... duele...'\nAnte el dolor: retirada sin localización.",
+    hint:"⚠️ ¿Qué consideración especial aplica para el estímulo doloroso en fractura de base de cráneo?",
+    correct:{o:2,v:3,m:4},
+    feedback:"En sospecha de fractura de base de cráneo, EVITA la presión supraorbital si hay evidencia de fractura frontal o peri-orbitaria. Usa estímulo periférico (lecho ungueal, trapecio) como alternativa. El ojo de mapache y la rinolicuorrea son signos de fractura de base de cráneo.",
+    nt:false
+  },
+  {
+    id:51, level:3,
+    scene:"Hombre de 28 años, herida por arma de fuego en región parietal derecha. Ingresa con GCS 15, pero a los 5 minutos presenta deterioro. Evalúa estado actual.",
+    eval:"Abre los ojos al estímulo verbal.\nEmite palabras: 'Me duele... qué pasó...' Desorientado en lugar y evento.\nLe pides que mueva los dedos: los mueve.",
+    correct:{o:3,v:4,m:6},
+    feedback:"Deterioro de 2 puntos (15→13) en 5 minutos en herida por arma de fuego craneal: sospecha de hematoma epidural o hemorragia intracerebral en expansión rápida. La cinética del deterioro es la señal de alarma. Máxima prioridad de traslado, alerta al equipo quirúrgico. El tiempo cerebro-quirófano es crítico.",
+    nt:false
+  },
+  {
+    id:52, level:3,
+    scene:"Mujer de 19 años, trauma craneal. Bajo los efectos del alcohol (aliento etílico, ataxia previa al accidente según testigos).",
+    eval:"Abre los ojos espontáneamente, aunque con expresión somnolienta.\nHabla pero con lenguaje disártrico (arrastrado): 'Estoy bien... fue un golpe nomás.' Aparentemente orientada.\nLe pides que levante los brazos: los levanta con lentitud.",
+    hint:"⚠️ El alcohol puede enmascarar o simular deterioro neurológico.",
+    correct:{o:4,v:4,m:6},
+    feedback:"Uno de los casos más difíciles en prehospitalaria. El alcohol puede: (1) simular un GCS bajo cuando en realidad es intoxicación, o (2) enmascarar un deterioro real. Regla de oro: NUNCA atribuyas el deterioro neurológico al alcohol hasta descartar lesión intracraneal. En trauma + alcohol, asume siempre causa traumática.",
+    nt:false
+  },
+  {
+    id:53, level:3,
+    scene:"Hombre de 72 años, caída en hogar. Anticoagulado con warfarina por fibrilación auricular.",
+    eval:"Abre los ojos al llamarlo.\nResponde con coherencia: 'Caí del sillón, me duele la cabeza.' Orientado en persona, lugar y evento. No recuerda el día exacto.\nLe pides que siga tu dedo con los ojos y lo hace. Aprieta tu mano cuando se lo pides.",
+    correct:{o:3,v:4,m:6},
+    feedback:"Un paciente anticoagulado con warfarina y TCE es emergencia de alto riesgo independientemente del GCS. La warfarina impide la coagulación normal: incluso un trauma menor puede causar hematomas intracraneales de rápido crecimiento. GCS 13 = traslado urgente para TC craneal. Monitoreo neurológico cada 5 minutos.",
+    nt:false
+  },
+  {
+    id:54, level:3,
+    scene:"Mujer de 38 años, trauma craneal en accidente de tránsito. Presenta anisocoria: pupila derecha dilatada y no reactiva, pupila izquierda normal.",
+    eval:"No abre los ojos espontáneamente. Al llamarla, no abre los ojos.\nAplicas presión en el esternón: abre los ojos.\nEmite gemidos ante el dolor.\nAnte el dolor: extensión anormal bilateral (descerebración).",
+    correct:{o:2,v:2,m:2},
+    feedback:"GCS 6 + anisocoria (pupila unilateral dilatada no reactiva) = síndrome de herniación cerebral transtentorial. La pupila dilatada ipsilateral indica compresión del nervio oculomotor (III par craneal) por herniación del uncus temporal. Emergencia neuroquirúrgica. Descerebración bilateral confirma compromiso del tronco encefálico.",
+    nt:false
+  },
+  {
+    id:55, level:3,
+    scene:"Hombre de 45 años, trauma craneal. Ante el estímulo doloroso, solo hay una leve extensión de los dedos sin movimiento de brazo ni cuerpo.",
+    eval:"No abre los ojos espontáneamente ni al estímulo verbal.\nAplicas estímulo doloroso: abre los ojos levemente.\nNo emite ningún sonido.\nEl único movimiento observable es una leve extensión de dedos ante el estímulo doloroso.",
+    hint:"⚠️ Movimientos mínimos ante el dolor — ¿cómo los clasificas?",
+    correct:{o:2,v:1,m:4},
+    feedback:"Movimientos mínimos o atenuados ante el dolor que no corresponden a localización pueden clasificarse como retirada (M4) si no hay patrón postural claro. Clave: ¿el movimiento se dirige al sitio del dolor? (M5), ¿es retirada inespecífica? (M4), ¿es patrón postural estereotipado? (M3 o M2).",
+    nt:false
+  },
+  {
+    id:56, level:3,
+    scene:"Mujer de 32 años, accidente de tránsito. Evaluación inicial GCS 12. A los 8 minutos de traslado, el copiloto reporta que 'está más despierta y habla mejor'. Evalúa estado actual.",
+    eval:"Abre los ojos espontáneamente.\nLe preguntas cómo se llama: responde. Dónde está: 'En la ambulancia, me chocaron.' Qué día es: lo dice bien.\nLe pides que apriete ambas manos: lo hace con fuerza normal.",
+    correct:{o:4,v:5,m:6},
+    feedback:"Mejora de GCS 12 a 15 en 8 minutos puede indicar: resolución de aturdimiento post-traumático, mejoría por estabilización hemodinámica, o período post-ictal resuelto. Aunque la mejoría es favorable, no reduce la necesidad de evaluación hospitalaria. Un TCE moderado puede mejorar transitoriamente antes de deterioro secundario.",
+    nt:false
+  },
+  {
+    id:57, level:3,
+    scene:"Hombre de 50 años, trauma craneal en accidente de trabajo. Antecedente de sordera profunda congénita.",
+    eval:"Abre los ojos espontáneamente cuando te acercas.\nNo responde a estímulos verbales (no puede escuchar). Te comunicas por señas básicas. Al hacerle gestos, responde con señas indicando que está bien y señala su cabeza.\nLe haces gesto de 'aprieta mi mano': lo hace.",
+    hint:"⚠️ ¿Cómo evalúas a un paciente sordo profundo?",
+    correct:{o:4,v:'NT',m:6},
+    feedback:"En pacientes sordos, V es NT por limitación sensorial, no neurológica. La apertura ocular al acercarte es O4 porque no depende del estímulo auditivo. Para M, las instrucciones pueden darse por gestos: si el paciente sigue gestos voluntariamente, es M6. Documenta: 'sordo congénito, V NT por causa sensorial, orientado por señas.'",
+    nt:true, ntComp:'v'
+  },
+  {
+    id:58, level:3,
+    scene:"Mujer de 41 años, trauma craneal. Presenta agitación psicomotora severa: grita, forcejea, no coopera con ninguna evaluación.",
+    eval:"Ojos abiertos espontáneamente. Mirada errática.\nGrita: '¡Suéltenme! ¡No me toquen!' No responde preguntas de orientación, solo grita con frases que no permiten evaluar orientación.\nNo sigue instrucciones motoras. Se resiste activamente al manejo. No es posible aplicar estímulo doloroso de forma controlada ni evaluar si localiza o retira.",
+    hint:"⚠️ La agitación extrema impide evaluar ciertos componentes. La resistencia activa NO equivale a obedecer órdenes (M6). ¿Qué componente no puede evaluarse de forma confiable?",
+    correct:{o:4,v:4,m:'NT'},
+    feedback:"Este es un caso crítico de interpretación: la resistencia activa y el forcejeo NO equivalen a obedecer órdenes (M6 requiere que el paciente ejecute una instrucción verbal intencionalmente). Tampoco puede clasificarse M4/M5 porque no se puede aplicar estímulo doloroso controlado. La respuesta motora es NT (No Testeable) por imposibilidad de evaluación confiable en contexto de agitación severa. La agitación misma puede ser signo de hipoxia cerebral, TCE, o hipoglucemia: descarta estas causas urgentemente.",
+    nt:true, ntComp:'m'
+  },
+  {
+    id:59, level:3,
+    scene:"Hombre de 63 años, caída de 5 metros. GCS inicial 10. A los 3 minutos presenta postura de descerebración bilateral. Evalúa estado actual.",
+    eval:"Abre los ojos solo al dolor.\nEmite gemidos sin articular palabras.\nPresenta extensión anormal bilateral (descerebración) ante el estímulo doloroso.",
+    correct:{o:2,v:2,m:2},
+    feedback:"Deterioro de GCS 10 a 6 en 3 minutos es una catástrofe neurológica. La aparición de descerebración bilateral indica compromiso del tronco encefálico — pronóstico grave. Acciones: (1) Manejo avanzado de vía aérea urgente, (2) Hiperventilación controlada como puente, (3) Máxima prioridad de traslado, (4) Alerta a neurocirugía.",
+    nt:false
+  },
+  {
+    id:60, level:3,
+    scene:"Mujer de 29 años, accidente de tránsito. Cuello inmovilizado con collarín. Embarazada (aproximadamente 32 semanas).",
+    eval:"Abre los ojos espontáneamente con expresión de angustia.\nDice: 'Mi bebé... ¿está bien mi bebé? Me duele la panza.' Sabe su nombre y que está en la vía. No sabe la hora exacta.\nLe pides que apriete tu mano: lo hace con fuerza.",
+    correct:{o:4,v:4,m:6},
+    feedback:"La ansiedad por el bebé es una respuesta normal, no confusión neurológica. Sin embargo, la desorientación en tiempo puede ser real o secundaria al estado emocional: en caso de duda, sé conservador (V4). Traslado a centro con capacidad obstétrica y neuroquirúrgica. Posición decúbito lateral izquierdo si es posible.",
+    nt:false
+  },
+  {
+    id:61, level:3,
+    scene:"Hombre de 30 años, trauma craneal con hemorragia subaracnoidea sospechada (cefalea 'en trueno' previo a pérdida de conciencia).",
+    eval:"No abre los ojos espontáneamente. Al llamarlo, abre los ojos brevemente.\nResponde: 'La cabeza... peor dolor de mi vida.' Orientado en persona pero no puede ubicarse en lugar ni tiempo.\nLe pides que apriete tu mano: lo hace débilmente.",
+    correct:{o:3,v:4,m:6},
+    feedback:"La cefalea 'en trueno' (peor dolor de cabeza de la vida, inicio súbito) es la presentación clásica de hemorragia subaracnoidea. GCS 13 con este antecedente requiere máxima urgencia aunque el puntaje sea 'leve'. La HSA puede deteriorar rápidamente.",
+    nt:false
+  },
+  {
+    id:62, level:3,
+    scene:"Mujer de 55 años, trauma craneal severo. Sin respuesta a ningún estímulo. Presenta respiración de Cheyne-Stokes (patrón respiratorio irregular con apneas).",
+    eval:"No abre los ojos a ningún estímulo.\nNo emite ningún sonido.\nNo hay respuesta motora ante estímulo doloroso intenso.",
+    correct:{o:1,v:1,m:1},
+    feedback:"GCS 3 es el valor mínimo. La respiración de Cheyne-Stokes (hiperpnea cíclica con apneas periódicas) indica disfunción del tronco encefálico bilateral o lesión hemisférica bilateral profunda. Es un signo de mal pronóstico. Manejo avanzado de vía aérea, ventilación mecánica controlada, traslado urgente.",
+    nt:false
+  },
+  {
+    id:63, level:3,
+    scene:"Hombre de 44 años, trauma craneal en accidente de trabajo. GCS 15 inicial. Diez minutos después presenta midriasis bilateral fija. Evalúa estado actual.",
+    eval:"No abre los ojos espontáneamente. Al llamarlo, no abre los ojos.\nAplicas presión supraorbital: abre los ojos con mueca.\nNo emite ningún sonido.\nAnte el dolor: extensión anormal bilateral (descerebración).",
+    correct:{o:2,v:1,m:2},
+    feedback:"Deterioro de GCS 15 a 5 en 10 minutos con midriasis bilateral fija es una emergencia neurológica máxima. La midriasis bilateral fija en TCE indica compresión bilateral del III par craneal por herniación transtentorial bilateral — herniación cerebral masiva. Pronóstico muy grave. Manejo avanzado urgente e hiperventilación como puente.",
+    nt:false
+  },
+  {
+    id:64, level:3,
+    scene:"Mujer de 36 años, trauma craneal en accidente de motocicleta sin casco. El primer respondedor refiere: 'hace un minuto decía su nombre, ahora no responde'.",
+    eval:"Al llamarla, abre los ojos con dificultad.\nEmite palabras sueltas sin coherencia: 'No... casa...'\nLe pides que apriete tu mano: no sigue instrucciones. Al aplicar presión en el esternón, la mano se dirige hacia el sitio del dolor.",
+    correct:{o:3,v:3,m:5},
+    feedback:"Si hace un minuto decía su nombre (GCS más alto) y ahora emite palabras inapropiadas (GCS 11), hay deterioro en progresión. Un deterioro de 2 o más puntos requiere acción inmediata. Prepara manejo avanzado de vía aérea, aumenta velocidad de traslado y alerta al hospital.",
+    nt:false
+  },
+  {
+    id:65, level:3,
+    scene:"Hombre de 58 años, encontrado en vehículo accidentado. Pupilas puntiformes (miosis bilateral severa) y bradipnea. Se encuentran medicamentos en el vehículo.",
+    eval:"No abre los ojos espontáneamente ni al estímulo verbal.\nAplicas presión supraorbital: abre los ojos levemente.\nEmite gemidos ante el dolor.\nAnte el estímulo doloroso: retirada de la extremidad.",
+    hint:"⚠️ La triada miosis + bradipnea + compromiso de conciencia sugiere un factor confundente importante.",
+    correct:{o:2,v:2,m:4},
+    feedback:"La triada miosis puntiforme + bradipnea + compromiso de conciencia es la presentación clásica de intoxicación por opioides (sobredosis). En trauma, el compromiso puede ser mixto: traumático Y tóxico. Acciones: (1) Manejo de vía aérea, (2) Naloxona si hay sospecha de opioides, (3) No atribuir TODO al trauma hasta descartar intoxicación.",
+    nt:false
+  }
+];
+
+const GCS_OPTIONS = {
+  o: [
+    { val:4, title:'Espontánea', desc:'Abre los ojos al acercarte, sin estímulo verbal ni físico.' },
+    { val:3, title:'Al hablar / Voz', desc:'Abre los ojos tras instrucción o llamada verbal.' },
+    { val:2, title:'Al dolor / Presión', desc:'Solo abre los ojos ante estímulo doloroso.' },
+    { val:1, title:'Sin respuesta', desc:'Ausencia total de apertura ante cualquier estímulo.' }
+  ],
+  v: [
+    { val:5, title:'Orientado', desc:'Responde correctamente persona, lugar, tiempo y evento.' },
+    { val:4, title:'Confuso', desc:'Conversa pero con desorientación en tiempo, espacio o evento.' },
+    { val:3, title:'Palabras inapropiadas', desc:'Palabras sueltas sin frases con sentido estructurado.' },
+    { val:2, title:'Sonidos incomprensibles', desc:'Solo gemidos o quejidos sin palabras articuladas.' },
+    { val:1, title:'Sin respuesta', desc:'Sin emisión de ningún tipo de sonido vocal.' }
+  ],
+  m: [
+    { val:6, title:'Obedece órdenes', desc:'Realiza movimientos ante instrucciones verbales simples.' },
+    { val:5, title:'Localiza el dolor', desc:'La mano se dirige al sitio del estímulo intentando retirarlo.' },
+    { val:4, title:'Retirada al dolor', desc:'Retira la extremidad sin localizarlo con precisión.' },
+    { val:3, title:'Flexión anormal', desc:'Decorticación: flexión de brazos, extensión de piernas.' },
+    { val:2, title:'Extensión anormal', desc:'Descerebración: extensión rígida de brazos y piernas.' },
+    { val:1, title:'Sin respuesta', desc:'Flaccidez total, sin movimiento ante ningún estímulo.' }
+  ]
+};
+
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
+
+const STATE_VERSION = '2.0';
+
+const DEFAULT_STATE = {
+  version: STATE_VERSION,
+  xp: 0,
+  streak: 0,
+  maxStreak: 0,
+  totalAnswered: 0,
+  totalCorrect: 0,
+  currentLevel: 1,
+  currentCase: null,
+  answers: {},
+  levelsUnlocked: [1],
+  selections: { o: null, v: null, m: null },
+  submitted: false,
+  hintUsed: {},        // { caseId: bool }
+  attemptCounts: {},   // { caseId: number }
+  compStats: { o: { correct:0, total:0 }, v: { correct:0, total:0 }, m: { correct:0, total:0 } },
+  theorySeen: false
+};
+
+let state = { ...DEFAULT_STATE };
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem('gcs_state');
+    if (!saved) return;
+    const parsed = JSON.parse(saved);
+    if (parsed.version !== STATE_VERSION) {
+      console.warn('GCS Trainer: versión de estado incompatible, iniciando desde cero.');
+      localStorage.removeItem('gcs_state');
+      return;
+    }
+    state = { ...DEFAULT_STATE, ...parsed };
+    // Ensure nested objects are merged, not overwritten
+    state.compStats = { ...DEFAULT_STATE.compStats, ...(parsed.compStats || {}) };
+    state.hintUsed = parsed.hintUsed || {};
+    state.attemptCounts = parsed.attemptCounts || {};
+  } catch(e) {
+    console.warn('GCS Trainer: estado corrupto, iniciando desde cero:', e);
+    try { localStorage.removeItem('gcs_state'); } catch(_) {}
+  }
+}
+
+function saveState() {
+  try {
+    localStorage.setItem('gcs_state', JSON.stringify(state));
+  } catch(e) {
+    console.warn('GCS Trainer: no se pudo guardar el estado (storage no disponible):', e);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════
+
+function showSection(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('section-' + name).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => {
+    const onclick = t.getAttribute('onclick') || '';
+    if (onclick.includes("'" + name + "'")) t.classList.add('active');
+  });
+  if (name === 'practica') {
+    // M4: warn if student hasn't opened any theory accordion yet
+    if (!state.theorySeen) {
+      setTimeout(() => showToast('💡 Tip: revisa la sección Teoría antes de practicar', 'info'), 400);
+    }
+    renderPractica();
+  }
+  if (name === 'teoria') {
+    state.theorySeen = true;
+    saveState();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// ACCORDION
+// ═══════════════════════════════════════════════════════════
+
+function toggleAcc(header) {
+  const body = header.nextElementSibling;
+  const isOpen = body.classList.contains('open');
+  document.querySelectorAll('.acc-body.open').forEach(b => {
+    b.classList.remove('open');
+    b.previousElementSibling.classList.remove('open');
+  });
+  if (!isOpen) {
+    body.classList.add('open');
+    header.classList.add('open');
+    // M4 FIX: track that student has engaged with theory
+    if (!state.theorySeen) {
+      state.theorySeen = true;
+      saveState();
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// PRACTICA RENDER
+// ═══════════════════════════════════════════════════════════
+
+function getGCSColor(total) {
+  if (total === 'NT' || total === null || isNaN(total)) return 'var(--text-sub)';
+  if (total >= 13) return 'var(--accent)';
+  if (total >= 9) return 'var(--warn)';
+  if (total >= 4) return 'var(--danger)';
+  return '#FF4D6D';
+}
+
+function getClassification(total) {
+  if (typeof total !== 'number' || isNaN(total)) return '';
+  if (total === 15) return { label:'Normal', class:'gcs-normal' };
+  if (total >= 13) return { label:'Lesión leve', class:'gcs-leve' };
+  if (total >= 9)  return { label:'Lesión moderada', class:'gcs-moderado' };
+  if (total >= 4)  return { label:'Coma', class:'gcs-coma' };
+  return { label:'Sin respuesta total', class:'gcs-minimo' };
+}
+
+function renderStats() {
+  const accuracy = state.totalAnswered > 0
+    ? Math.round((state.totalCorrect / state.totalAnswered) * 100) : 0;
+  document.getElementById('stat-xp').textContent = state.xp;
+  document.getElementById('stat-streak').textContent = state.streak + (state.streak > 0 ? ' 🔥' : '');
+  document.getElementById('stat-correct').textContent = accuracy + '%';
+  document.getElementById('stat-level').textContent = 'N' + (state.levelsUnlocked[state.levelsUnlocked.length-1] || 1);
+  document.getElementById('nav-xp').textContent = state.xp + ' XP';
+  document.getElementById('streak-count').textContent = state.streak;
+}
+
+function renderLevelProgress() {
+  const container = document.getElementById('level-progress-container');
+  const levels = [
+    { n:1, label:'Nivel 1 — Básico', total:20, color:'var(--accent)' },
+    { n:2, label:'Nivel 2 — Intermedio', total:20, color:'var(--warn)' },
+    { n:3, label:'Nivel 3 — Avanzado', total:25, color:'var(--danger)' }
+  ];
+  container.innerHTML = levels.map(l => {
+    const completed = CASES.filter(c => c.level === l.n && state.answers[c.id]?.correct).length;
+    const pct = Math.round((completed / l.total) * 100);
+    const locked = !state.levelsUnlocked.includes(l.n);
+    return `<div class="level-progress-row">
+      <span class="lp-label" style="color:${locked?'var(--text-muted)':l.color}">${l.label}</span>
+      <div class="lp-bar"><div class="lp-fill" style="width:${pct}%;background:${l.color}"></div></div>
+      <span class="lp-count">${locked?'🔒':completed+'/'+l.total}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderLevelTabs() {
+  document.querySelectorAll('.level-tab').forEach(tab => {
+    const lvl = parseInt(tab.dataset.level);
+    tab.classList.toggle('active', lvl === state.currentLevel);
+    tab.classList.toggle('locked', !state.levelsUnlocked.includes(lvl));
+  });
+}
+
+function renderCasesGrid() {
+  const grid = document.getElementById('cases-grid');
+  const casesInLevel = CASES.filter(c => c.level === state.currentLevel);
+  grid.innerHTML = casesInLevel.map(c => {
+    const ans = state.answers[c.id];
+    let cls = '';
+    let tooltip = `Caso ${c.id}`;
+    if (ans && ans.correct) {
+      const firstTry = ans.attemptNumber === 1;
+      const usedHint = ans.usedHint;
+      cls = firstTry ? 'completed' : 'completed-retry';
+      tooltip += firstTry ? ' · ✓ 1er intento' : ` · ✓ Intento ${ans.attemptNumber}`;
+      if (usedHint) tooltip += ' · 💡 con pista';
+    } else if (ans && !ans.correct) {
+      cls = 'failed';
+      tooltip += ' · ✗ Incorrecto';
+    } else if (c.id === state.currentCase) {
+      cls = 'current';
+    }
+    return `<button class="case-btn ${cls}" onclick="openCase(${c.id})" title="${tooltip}">${c.id}</button>`;
+  }).join('');
+}
+
+function renderPractica() {
+  renderStats();
+  renderLevelProgress();
+  renderLevelTabs();
+  renderCasesGrid();
+  if (state.currentCase) {
+    state.submitted = !!state.answers[state.currentCase]?.correct;
+    renderCase(state.currentCase, false); // no scroll on reload — user's position unknown
+  } else {
+    // Auto-open first incomplete case in current level
+    const firstIncomplete = CASES.find(c =>
+      c.level === state.currentLevel && !state.answers[c.id]?.correct
+    );
+    if (firstIncomplete) {
+      state.currentCase = firstIncomplete.id;
+      state.selections = { o:null, v:null, m:null };
+      state.submitted = false;
+      renderCase(firstIncomplete.id, true); // scroll — loading section for first time
+    } else {
+      document.getElementById('active-case-container').innerHTML = '';
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// LEVEL SELECT
+// ═══════════════════════════════════════════════════════════
+
+function selectLevel(lvl) {
+  if (!state.levelsUnlocked.includes(lvl)) {
+    showToast('🔒 Completa más casos del nivel anterior', 'warn');
+    return;
+  }
+  state.currentLevel = lvl;
+  state.currentCase = null;
+  state.selections = { o:null, v:null, m:null };
+  state.submitted = false;
+  saveState();
+  renderLevelTabs();
+  renderCasesGrid();
+  document.getElementById('active-case-container').innerHTML = '';
+}
+
+// ═══════════════════════════════════════════════════════════
+// OPEN CASE
+// ═══════════════════════════════════════════════════════════
+
+function openCase(id) {
+  const c = CASES.find(x => x.id === id);
+  if (!c) return;
+  if (!state.levelsUnlocked.includes(c.level)) {
+    showToast('🔒 Nivel bloqueado', 'warn');
+    return;
+  }
+  // Reset per-case transient state
+  state.currentCase = id;
+  state.ntAllConfirmed = false; // C2 FIX: reset confirmation for each new case
+  state.selections = { o:null, v:null, m:null };
+  // If already correctly answered, go to review mode
+  state.submitted = false;
+  saveState();
+  renderCasesGrid();
+  renderCase(id, true); // scroll — user opened a new case
+}
+
+function renderCase(id, scrollToTop = false) {
+  const c = CASES.find(x => x.id === id);
+  if (!c) return;
+  const ans = state.answers[id];
+  const alreadyDone = ans && ans.correct;
+
+  const levelLabels = { 1:'Básico', 2:'Intermedio', 3:'Avanzado' };
+  const badgeClass = { 1:'badge-1', 2:'badge-2', 3:'badge-3' };
+
+  // Determine if NT case
+  const isNTCase = c.nt;
+
+  let html = `
+  <div class="case-card">
+    <div class="case-card-header">
+      <div>
+        <span class="case-num">Caso ${c.id} de 65 · Nivel ${c.level}</span>
+        <div class="case-scene">${c.scene}</div>
+      </div>
+      <span class="level-badge ${badgeClass[c.level]}">${levelLabels[c.level]}</span>
+    </div>
+    <div class="case-body">
+      <div class="case-eval-title">Evaluación clínica</div>
+      <div class="case-text">${c.eval}</div>
+  `;
+
+  // Hint
+  if (c.hint) {
+    html += `<div class="hint-box" id="hint-${id}">${c.hint.replace('⚠️ ','<strong>⚠️ Pista:</strong> ')}</div>
+    <button class="hint-toggle" onclick="toggleHint(${id})">💡 Mostrar pista</button>`;
+  }
+
+  // GCS Meter
+  const oSel = state.selections.o;
+  const vSel = state.selections.v;
+  const mSel = state.selections.m;
+
+  let total = '-';
+  let totalNum = NaN;
+  let hasNT = false;
+
+  if (isNTCase) {
+    const ntComp = c.ntComp;
+    hasNT = true;
+    if (ntComp === 'all') {
+      total = 'NT';
+    } else if (ntComp === 'o') {
+      if (vSel !== null && mSel !== null) total = 'NT';
+    } else if (ntComp === 'v') {
+      if (oSel !== null && mSel !== null) total = 'NT';
+    } else if (ntComp === 'm') {
+      if (oSel !== null && vSel !== null) total = 'NT';
+    }
+  } else {
+    if (oSel !== null && vSel !== null && mSel !== null) {
+      totalNum = oSel + vSel + mSel;
+      total = totalNum;
+    }
+  }
+
+  const totalColor = typeof totalNum === 'number' ? getGCSColor(totalNum) : 'var(--text-sub)';
+  const classif = typeof totalNum === 'number' ? getClassification(totalNum) : null;
+
+  const oFill = oSel ? Math.round((oSel/4)*100) : 0;
+  const vFill = vSel ? Math.round((vSel/5)*100) : 0;
+  const mFill = mSel ? Math.round((mSel/6)*100) : 0;
+
+  html += `
+  <div class="gcs-meter">
+    <div class="gcs-total-display">
+      <div>
+        <div class="gcs-total-label">GCS Total</div>
+        <div class="gcs-components">
+          <span>O&nbsp;<span class="gcs-comp-val c-o">${oSel !== null ? oSel : '-'}</span></span>
+          <span>&nbsp;V&nbsp;<span class="gcs-comp-val c-v">${vSel !== null ? vSel : '-'}</span></span>
+          <span>&nbsp;M&nbsp;<span class="gcs-comp-val c-m">${mSel !== null ? mSel : '-'}</span></span>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div class="gcs-total-value" style="color:${totalColor}">${total}</div>
+        ${classif ? `<span class="gcs-classification ${classif.class}">${classif.label}</span>` : ''}
+        ${total === 'NT' ? '<span class="gcs-classification" style="color:var(--purple)">No calculable</span>' : ''}
+      </div>
+    </div>
+  `;
+
+  // Component O
+  html += renderComponent('o', 'O', 'Apertura Ocular', c, oSel, oFill, isNTCase);
+  // Component V
+  html += renderComponent('v', 'V', 'Respuesta Verbal', c, vSel, vFill, isNTCase);
+  // Component M
+  html += renderComponent('m', 'M', 'Respuesta Motora', c, mSel, mFill, isNTCase);
+
+  html += `</div>`; // close gcs-meter
+
+  // C2 FIX: NT-all confirmation panel (e.g. case 46 — active seizure)
+  if (isNTCase && c.ntComp === 'all' && !state.ntAllConfirmed && !state.submitted) {
+    html += `<div style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.3);border-radius:var(--radius-sm);padding:18px;margin-bottom:16px;text-align:center;">
+      <div style="font-size:1.5rem;margin-bottom:8px;">⚡</div>
+      <div style="font-family:var(--font-head);font-weight:700;color:var(--purple);margin-bottom:6px;">Situación especial de evaluación</div>
+      <p style="font-size:.85rem;color:var(--text-sub);margin-bottom:14px;max-width:380px;margin-left:auto;margin-right:auto;">Antes de continuar, confirma que comprendes por qué el GCS <strong style="color:var(--text-main)">no puede aplicarse</strong> en este escenario clínico.</p>
+      <button onclick="confirmNTAll(${id})" style="background:var(--purple);color:#fff;border:none;border-radius:var(--radius-sm);padding:12px 24px;font-family:var(--font-head);font-weight:700;font-size:.9rem;cursor:pointer;">
+        Entiendo — el GCS no es aplicable aquí
+      </button>
+    </div>`;
+  }
+
+  // M7 FIX: Determine if this case is already correctly completed (review mode)
+  const isReviewMode = state.answers[id]?.correct === true && !state.submitted;
+
+  // Submit button (only when not submitted and not review mode)
+  if (!state.submitted && !isReviewMode) {
+    const allSelected = isNTCase
+      ? checkAllSelectedNT(c, oSel, vSel, mSel)
+      : (oSel !== null && vSel !== null && mSel !== null);
+    html += `<button class="submit-btn primary" id="submit-btn-${id}" onclick="submitAnswer(${id})" ${allSelected ? '' : 'disabled'}>
+      Verificar respuesta
+    </button>`;
+  }
+
+  // Result panel (show when submitted, or in review mode)
+  if (state.submitted && state.answers[id]) {
+    html += renderResult(c, state.answers[id]);
+  } else if (isReviewMode) {
+    html += renderReviewMode(c, state.answers[id]);
+  }
+
+  html += `</div></div>`;
+
+  document.getElementById('active-case-container').innerHTML = html;
+
+  // Only scroll when explicitly navigating to a new case, not on every option selection
+  if (scrollToTop) {
+    requestAnimationFrame(() => {
+      const el = document.getElementById('active-case-container');
+      if (!el) return;
+      const navH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--nav-h')) || 64;
+      const top = el.getBoundingClientRect().top + window.scrollY - navH - 16;
+      window.scrollTo({ top, behavior: 'smooth' });
+    });
+  }
+}
+
+function checkAllSelectedNT(c, o, v, m) {
+  // C2 FIX: all-NT cases (convulsion active) require explicit student acknowledgment
+  if (c.ntComp === 'all') return !!state.ntAllConfirmed;
+  if (c.ntComp === 'o') return v !== null && m !== null;
+  if (c.ntComp === 'v') return o !== null && m !== null;
+  if (c.ntComp === 'm') return o !== null && v !== null;
+  return o !== null && v !== null && m !== null;
+}
+
+function confirmNTAll(caseId) {
+  state.ntAllConfirmed = true;
+  renderCase(caseId, false); // no scroll — still on same case
+}
+
+function renderComponent(comp, letter, name, c, sel, fillPct, isNTCase) {
+  const options = GCS_OPTIONS[comp];
+  const isThisNT = isNTCase && (c.ntComp === comp || c.ntComp === 'all');
+  const maxVal = comp === 'o' ? 4 : comp === 'v' ? 5 : 6;
+  const selectedClass = sel !== null ? `selected-${comp}` : '';
+
+  let html = `
+  <div class="comp-group">
+    <div class="comp-label">
+      <div class="comp-badge ${comp}">${letter}</div>
+      <span class="comp-name">${name}</span>
+      <div class="comp-progress-bar"><div class="comp-progress-fill fill-${comp}" style="width:${fillPct}%"></div></div>
+      <span class="comp-current-val" style="color:var(--gcs-${comp})">${sel !== null ? sel : '-'}</span>
+    </div>
+    <div class="options-list">
+  `;
+
+  if (!isThisNT) {
+    options.forEach(opt => {
+      const isSelected = sel === opt.val;
+      html += `
+      <button class="option-btn ${isSelected ? 'selected-'+comp : ''}"
+        role="radio" aria-checked="${isSelected}"
+        aria-label="${opt.val} puntos — ${opt.title}: ${opt.desc}"
+        onclick="selectOption('${comp}', ${opt.val}, ${c.id})">
+        <span class="opt-num" style="color:var(--gcs-${comp})">${opt.val}</span>
+        <div class="opt-content">
+          <div class="opt-title">${opt.title}</div>
+          <div class="opt-desc">${opt.desc}</div>
+        </div>
+        <div class="opt-radio ${isSelected ? 'checked-'+comp : ''}"></div>
+      </button>`;
+    });
+  } else {
+    html += `<div style="background:rgba(167,139,250,.06);border:1px dashed rgba(167,139,250,.3);border-radius:8px;padding:14px;font-size:.85rem;color:var(--purple);text-align:center;">
+      <strong>NT — No Testeable</strong><br>
+      <span style="color:var(--text-sub);font-size:.8rem;">Este componente no puede evaluarse en este caso (causa mecánica/contextual). Se documenta como NT, no como 1.</span>
+    </div>`;
+  }
+
+  html += `</div></div>`;
+  return html;
+}
+
+function renderResult(c, ans) {
+  const isCorrect = ans.correct;
+  const isNearMiss = ans.isNearMiss;
+  const xpGained = ans.xpGained || 0;
+  const attemptNum = ans.attemptNumber || 1;
+  const firstAttemptCorrect = isCorrect && attemptNum === 1;
+  const usedHint = ans.usedHint;
+
+  let resultIcon = isCorrect ? '✅' : isNearMiss ? '⚠️' : '❌';
+  let resultClass = isCorrect ? 'correct' : 'incorrect';
+  let resultTitle = isCorrect
+    ? (firstAttemptCorrect ? '¡Correcto al primer intento!' : '¡Correcto!')
+    : (isNearMiss ? 'Casi correcto — error de ±1 punto' : 'Respuesta incorrecta');
+  let resultSub = isCorrect
+    ? 'Excelente diagnóstico neurológico.'
+    : isNearMiss
+      ? 'Estás muy cerca. Revisa qué componente falló por un punto.'
+      : 'Revisa la retroalimentación y vuelve a intentarlo.';
+
+  let badges = '';
+  if (firstAttemptCorrect) badges += `<span style="background:rgba(34,197,94,.15);color:var(--accent);border:1px solid rgba(34,197,94,.3);border-radius:4px;font-size:.7rem;padding:2px 7px;font-family:var(--font-head);font-weight:700;margin-right:4px;">★ 1er intento</span>`;
+  if (usedHint && isCorrect) badges += `<span style="background:rgba(167,139,250,.1);color:var(--purple);border:1px solid rgba(167,139,250,.25);border-radius:4px;font-size:.7rem;padding:2px 7px;font-family:var(--font-head);font-weight:700;">💡 Con pista</span>`;
+  if (attemptNum > 1) badges += `<span style="background:rgba(245,158,11,.1);color:var(--warn);border:1px solid rgba(245,158,11,.25);border-radius:4px;font-size:.7rem;padding:2px 7px;font-family:var(--font-head);font-weight:700;margin-left:4px;">Intento ${attemptNum}</span>`;
+
+  let html = `<div class="result-panel show" id="result-${c.id}">
+    <div class="result-header ${resultClass}">
+      <span class="result-icon">${resultIcon}</span>
+      <div style="flex:1">
+        <div class="result-title ${isCorrect ? 'result-correct' : isNearMiss ? '' : 'result-incorrect'}" style="${isNearMiss&&!isCorrect?'color:var(--warn)':''}">${resultTitle}</div>
+        <div class="result-sub">${resultSub}</div>
+        ${badges ? `<div style="margin-top:6px;">${badges}</div>` : ''}
+      </div>
+      ${xpGained > 0 ? `<div class="xp-gained"><span class="xp-val">+${xpGained}</span><span class="xp-lbl">XP</span></div>` : ''}
+    </div>`;
+
+  // Answer breakdown
+  html += `<div class="answer-breakdown">`;
+
+  const comps = ['o','v','m'];
+  const names = { o:'Apertura Ocular', v:'Respuesta Verbal', m:'Respuesta Motora' };
+  const colors = { o:'var(--gcs-o)', v:'var(--gcs-v)', m:'var(--gcs-m)' };
+
+  comps.forEach(comp => {
+    const userVal = ans.selections[comp];
+    const correctVal = c.correct[comp];
+    const isCompCorrect = userVal === correctVal || correctVal === 'NT';
+    const displayUser = userVal === 'NT' ? 'NT' : userVal;
+    const displayCorrect = correctVal === 'NT' ? 'NT' : correctVal;
+
+    html += `<div class="answer-row">
+      <span class="answer-comp" style="color:${colors[comp]}">${comp.toUpperCase()}</span>
+      <span class="answer-desc">${names[comp]}</span>
+      <span class="answer-user" style="color:${isCompCorrect ? 'var(--accent)' : 'var(--danger)'}">${displayUser !== null ? displayUser : '-'}</span>
+      <span class="answer-divider">→</span>
+      <span class="answer-correct-val">${displayCorrect}</span>
+      <span class="check-icon">${isCompCorrect ? '✓' : '✗'}</span>
+    </div>`;
+  });
+
+  // Total row
+  const userTotal = ans.userTotal;
+  const correctTotal = c.correct.o === 'NT' || c.correct.v === 'NT' || c.correct.m === 'NT' ? 'NT' : (c.correct.o + c.correct.v + c.correct.m);
+  const userColor = isCorrect ? 'var(--accent)' : 'var(--danger)';
+  html += `<div class="answer-row" style="background:rgba(255,255,255,.02)">
+    <span class="answer-comp">Σ</span>
+    <span class="answer-desc" style="font-weight:600;color:var(--text-main)">GCS Total</span>
+    <span class="answer-user" style="color:${userColor};font-size:1rem">${userTotal}</span>
+    <span class="answer-divider">→</span>
+    <span class="answer-correct-val" style="font-size:1rem">${correctTotal}</span>
+    <span class="check-icon">${isCorrect ? '✓' : '✗'}</span>
+  </div>`;
+
+  html += `</div>`;
+
+  // Feedback
+  html += `<div class="feedback-box"><strong>📋 Retroalimentación clínica</strong>${c.feedback}</div>`;
+
+  // Next button
+  const nextCase = getNextCase(c.id);
+  if (isCorrect && nextCase) {
+    html += `<button class="next-btn" onclick="openCase(${nextCase.id})">
+      Siguiente caso — Caso ${nextCase.id} →
+    </button>`;
+  } else if (!isCorrect) {
+    html += `<button class="next-btn" style="background:var(--bg-card2);border:1px solid var(--border);color:var(--text-main);" onclick="retryCase(${c.id})">
+      🔄 Reintentar este caso
+    </button>`;
+  } else {
+    html += `<div class="celebration">
+      <div class="celebration-icon">🏆</div>
+      <h2>¡Nivel completado!</h2>
+      <p>Has completado todos los casos disponibles. ¡Excelente trabajo como rescatista!</p>
+    </div>`;
+  }
+
+  html += `</div>`;
+  return html;
+}
+
+function getNextCase(currentId) {
+  const current = CASES.find(c => c.id === currentId);
+  if (!current) return null;
+  const inLevel = CASES.filter(c => c.level === current.level);
+  const idx = inLevel.findIndex(c => c.id === currentId);
+  if (idx < inLevel.length - 1) return inLevel[idx + 1];
+  // Check next level
+  const nextLevelCases = CASES.filter(c => c.level === current.level + 1);
+  if (nextLevelCases.length > 0 && state.levelsUnlocked.includes(current.level + 1)) {
+    return nextLevelCases[0];
+  }
+  return null;
+}
+
+// ═══════════════════════════════════════════════════════════
+// REVIEW MODE — M7 FIX: read-only view of completed cases
+// ═══════════════════════════════════════════════════════════
+
+function renderReviewMode(c, ans) {
+  const correctTotal = (c.correct.o === 'NT' || c.correct.v === 'NT' || c.correct.m === 'NT')
+    ? 'NT' : (c.correct.o + c.correct.v + c.correct.m);
+  const color = typeof correctTotal === 'number' ? getGCSColor(correctTotal) : 'var(--purple)';
+  const classif = typeof correctTotal === 'number' ? getClassification(correctTotal) : null;
+  const attemptNum = ans.attemptNumber || 1;
+  const usedHint = ans.usedHint;
+
+  let html = `<div class="result-panel show" style="margin-top:0">
+    <div style="background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.2);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;">
+      <span style="font-size:1.4rem;">📖</span>
+      <div style="flex:1">
+        <div style="font-family:var(--font-head);font-weight:700;color:var(--blue);margin-bottom:2px;">Modo revisión</div>
+        <div style="font-size:.8rem;color:var(--text-sub);">Ya completaste este caso correctamente${attemptNum > 1 ? ` (intento ${attemptNum})` : ''}${usedHint ? ' · con pista' : ''}.</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-family:var(--font-head);font-size:1.8rem;font-weight:700;color:${color};line-height:1">${correctTotal}</div>
+        ${classif ? `<div style="font-size:.7rem;color:${color};font-family:var(--font-head);font-weight:600">${classif.label}</div>` : ''}
+      </div>
+    </div>`;
+
+  // Answer breakdown (correct answers)
+  html += `<div class="answer-breakdown" style="margin-bottom:14px;">`;
+  const names = { o:'Apertura Ocular', v:'Respuesta Verbal', m:'Respuesta Motora' };
+  const colors = { o:'var(--gcs-o)', v:'var(--gcs-v)', m:'var(--gcs-m)' };
+  ['o','v','m'].forEach(comp => {
+    const correctVal = c.correct[comp];
+    const displayCorrect = correctVal === 'NT' ? 'NT' : correctVal;
+    const optLabel = correctVal === 'NT'
+      ? 'No Testeable'
+      : (GCS_OPTIONS[comp].find(x => x.val === correctVal)?.title || '');
+    html += `<div class="answer-row">
+      <span class="answer-comp" style="color:${colors[comp]}">${comp.toUpperCase()}</span>
+      <span class="answer-desc">${names[comp]}</span>
+      <span class="answer-correct-val">${displayCorrect}</span>
+      <span style="font-size:.75rem;color:var(--text-sub);flex:1;text-align:right;padding-right:4px">${optLabel}</span>
+      <span class="check-icon">✓</span>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // Feedback
+  html += `<div class="feedback-box"><strong>📋 Retroalimentación clínica</strong>${c.feedback}</div>`;
+
+  // Navigation
+  const nextCase = getNextCase(c.id);
+  if (nextCase) {
+    html += `<button class="next-btn" onclick="openCase(${nextCase.id})">Siguiente caso — Caso ${nextCase.id} →</button>`;
+  }
+
+  html += `</div>`;
+  return html;
+}
+
+// ═══════════════════════════════════════════════════════════
+// COMP STATS — O4: Per-component accuracy breakdown
+// ═══════════════════════════════════════════════════════════
+
+function renderCompStats() {
+  const el = document.getElementById('comp-stats-container');
+  if (!el) return;
+  const comps = [
+    { key:'o', label:'O — Apertura Ocular', color:'var(--gcs-o)' },
+    { key:'v', label:'V — Respuesta Verbal', color:'var(--gcs-v)' },
+    { key:'m', label:'M — Respuesta Motora', color:'var(--gcs-m)' }
+  ];
+  el.innerHTML = comps.map(c => {
+    const stat = state.compStats[c.key];
+    const pct = stat.total > 0 ? Math.round((stat.correct / stat.total) * 100) : null;
+    const display = pct !== null ? pct + '%' : '—';
+    const barColor = pct === null ? 'var(--border)'
+      : pct >= 80 ? 'var(--accent)'
+      : pct >= 60 ? 'var(--warn)'
+      : 'var(--danger)';
+    return `<div class="level-progress-row">
+      <span class="lp-label" style="color:${c.color};min-width:90px">${c.label}</span>
+      <div class="lp-bar"><div class="lp-fill" style="width:${pct||0}%;background:${barColor}"></div></div>
+      <span class="lp-count" style="color:${barColor};font-weight:700">${display}</span>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// OPTION SELECT
+// ═══════════════════════════════════════════════════════════
+
+function selectOption(comp, val, caseId) {
+  if (state.submitted) return;
+  state.selections[comp] = val;
+  renderCase(caseId, false); // no scroll — user is actively selecting
+}
+
+function toggleHint(id) {
+  const hint = document.getElementById('hint-' + id);
+  if (!hint) return;
+  const isOpening = !hint.classList.contains('visible');
+  hint.classList.toggle('visible');
+  // M5 FIX: Track hint usage if opening for first time
+  if (isOpening && !state.submitted) {
+    if (!state.hintUsed[id]) {
+      state.hintUsed[id] = true;
+      saveState();
+      showToast('💡 Pista activada — el XP se reducirá un 20%', 'warn');
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// SUBMIT
+// ═══════════════════════════════════════════════════════════
+
+function submitAnswer(id) {
+  const c = CASES.find(x => x.id === id);
+  if (!c) return;
+
+  const { o, v, m } = state.selections;
+  const isNTCase = c.nt;
+  const ntComp = c.ntComp;
+
+  // Build selections with NT applied
+  let selO = o, selV = v, selM = m;
+  if (isNTCase) {
+    if (ntComp === 'o') selO = 'NT';
+    if (ntComp === 'v') selV = 'NT';
+    if (ntComp === 'm') selM = 'NT';
+    if (ntComp === 'all') { selO = 'NT'; selV = 'NT'; selM = 'NT'; }
+  }
+
+  // C1 FIX: Safe total — never use || 0 on nullable selections
+  let userTotal = 'NT';
+  if (!isNTCase) {
+    if (selO === null || selV === null || selM === null) {
+      userTotal = 'Incompleto';
+    } else {
+      userTotal = selO + selV + selM;
+    }
+  }
+
+  // Check each component
+  const corrO = c.correct.o;
+  const corrV = c.correct.v;
+  const corrM = c.correct.m;
+
+  // A component with NT in the answer key is always "correct" (no evaluation possible)
+  const checkComp = (sel, corr) => corr === 'NT' ? true : sel === corr;
+
+  const oOk = checkComp(selO, corrO);
+  const vOk = checkComp(selV, corrV);
+  const mOk = checkComp(selM, corrM);
+  const isCorrect = oOk && vOk && mOk;
+
+  // M1 FIX: Partial credit — detect near-misses (±1 point)
+  const isNearMiss = !isCorrect && (() => {
+    const numericComps = ['o','v','m'].filter(comp => {
+      const corr = c.correct[comp];
+      return typeof corr === 'number';
+    });
+    const errors = numericComps.map(comp => {
+      const sel = comp === 'o' ? selO : comp === 'v' ? selV : selM;
+      const corr = c.correct[comp];
+      return typeof sel === 'number' ? Math.abs(sel - corr) : 99;
+    });
+    const maxError = Math.max(...errors);
+    const totalError = errors.reduce((a,b) => a + b, 0);
+    return maxError <= 1 && totalError <= 1; // Off by exactly 1 on exactly 1 component
+  })();
+
+  // Hint usage modifier
+  const usedHint = !!state.hintUsed[id];
+  const hintPenalty = usedHint ? 0.8 : 1; // −20% XP if hint was used
+
+  // XP calculation
+  const baseXP = c.level === 1 ? 10 : c.level === 2 ? 20 : 30;
+  const streakBonus = isCorrect && state.streak >= 5 ? Math.floor(baseXP * 0.5) : 0;
+  const nearMissXP = isNearMiss ? Math.floor(baseXP * 0.5 * hintPenalty) : 0;
+  const xpGained = isCorrect ? Math.round(baseXP * hintPenalty) + streakBonus : nearMissXP;
+
+  // C3 FIX: Track attempts correctly so stats never exceed 100%
+  const prevAnswer = state.answers[id];
+  const isFirstAttempt = !prevAnswer;
+  const wasAlreadyCorrect = prevAnswer?.correct === true;
+
+  if (wasAlreadyCorrect) {
+    // Already correct — reviewing only, don't modify stats
+    state.submitted = true;
+    state.answers[id].selections = { o: selO, v: selV, m: selM };
+    renderCase(id);
+    return;
+  }
+
+  // Increment attempt counter
+  state.attemptCounts[id] = (state.attemptCounts[id] || 0) + 1;
+
+  // Only count as a new "answered" event if it's the first attempt on this case
+  if (isFirstAttempt) {
+    state.totalAnswered++;
+  }
+
+  if (isCorrect) {
+    if (isFirstAttempt) state.totalCorrect++;
+    state.streak++;
+    state.maxStreak = Math.max(state.maxStreak, state.streak);
+    state.xp += xpGained;
+  } else {
+    state.streak = 0;
+  }
+
+  // Update per-component stats (only on first attempt)
+  if (isFirstAttempt) {
+    ['o','v','m'].forEach(comp => {
+      const corr = c.correct[comp];
+      if (typeof corr === 'number') {
+        state.compStats[comp].total++;
+        const sel = comp === 'o' ? selO : comp === 'v' ? selV : selM;
+        if (sel === corr) state.compStats[comp].correct++;
+      }
+    });
+  }
+
+  state.submitted = true;
+  state.answers[id] = {
+    correct: isCorrect,
+    isNearMiss,
+    usedHint,
+    firstAttempt: isFirstAttempt,
+    attemptNumber: state.attemptCounts[id],
+    selections: { o: selO, v: selV, m: selM },
+    userTotal,
+    xpGained
+  };
+
+  checkLevelUnlock();
+  saveState();
+
+  renderStats();
+  renderCasesGrid();
+  renderLevelProgress();
+  renderCompStats();
+  renderCase(id, false); // no scroll — result appears below where user already is
+
+  // Toast notifications
+  if (isCorrect) {
+    if (state.streak === 3) showToast('🔥 ¡Racha de 3! Sigue así', 'success');
+    if (state.streak === 5) showToast('🔥🔥 ¡Racha de 5! +50% XP bonus activado', 'success');
+    if (state.streak === 10) showToast('🔥🔥🔥 ¡Racha de 10! Rendimiento excepcional', 'success');
+    if (streakBonus > 0 && state.streak >= 5) showToast(`⭐ +${streakBonus} XP bonus por racha`, 'info');
+    if (usedHint) showToast('💡 Pista usada: −20% XP', 'warn');
+  } else if (isNearMiss) {
+    showToast(`⚠️ Casi correcto (+${nearMissXP} XP parcial)`, 'warn');
+  }
+}
+
+function retryCase(id) {
+  // C3 FIX: Delete incorrect answer entry so next submit is tracked as a new attempt
+  // but DON'T change totalAnswered (already counted) — only clear the answer record
+  const prevAnswer = state.answers[id];
+  if (prevAnswer && !prevAnswer.correct) {
+    delete state.answers[id];
+  }
+  state.hintUsed[id] = false; // reset hint status on retry
+  state.selections = { o:null, v:null, m:null };
+  state.submitted = false;
+  saveState();
+  renderCase(id, true); // scroll — starting fresh
+  renderCasesGrid();
+}
+
+// ═══════════════════════════════════════════════════════════
+// LEVEL UNLOCK
+// ═══════════════════════════════════════════════════════════
+
+function checkLevelUnlock() {
+  // Level 2 unlocks after 10 correct in level 1
+  const l1correct = CASES.filter(c => c.level === 1 && state.answers[c.id]?.correct).length;
+  if (l1correct >= 10 && !state.levelsUnlocked.includes(2)) {
+    state.levelsUnlocked.push(2);
+    showModal('🔓', '¡Nivel Intermedio Desbloqueado!', 'Has dominado lo suficiente del nivel básico. El nivel 2 — Intermedio — ahora está disponible con casos más complejos.');
+    renderLevelTabs();
+  }
+
+  // Level 3 unlocks after 12 correct in level 2
+  const l2correct = CASES.filter(c => c.level === 2 && state.answers[c.id]?.correct).length;
+  if (l2correct >= 12 && !state.levelsUnlocked.includes(3)) {
+    state.levelsUnlocked.push(3);
+    showModal('🔴', '¡Nivel Avanzado Desbloqueado!', 'Impresionante. El nivel 3 — Avanzado — contiene los casos más complejos: casos con NT, factores confundentes y decisiones críticas bajo presión.');
+    renderLevelTabs();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════════
+
+function showToast(msg, type = 'info') {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.textContent = msg;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+// ═══════════════════════════════════════════════════════════
+// MODAL
+// ═══════════════════════════════════════════════════════════
+
+function showModal(icon, title, body, buttons) {
+  document.getElementById('modal-icon').textContent = icon;
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-body').textContent = body;
+  const btnContainer = document.getElementById('modal-btn-container');
+  if (buttons && buttons.length) {
+    btnContainer.innerHTML = buttons.map(b =>
+      `<button class="modal-btn" style="${b.style || ''};margin-bottom:8px;" onclick="${b.action}">${b.label}</button>`
+    ).join('');
+  } else {
+    btnContainer.innerHTML = `<button class="modal-btn" onclick="closeModal()">¡Continuar!</button>`;
+  }
+  document.getElementById('modal-overlay').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('show');
+}
+
+// ═══════════════════════════════════════════════════════════
+// RESET — M3 FIX: custom confirmation modal, not browser confirm()
+// ═══════════════════════════════════════════════════════════
+
+function resetProgress() {
+  showModal(
+    '⚠️',
+    'Reiniciar todo el progreso',
+    'Esta acción eliminará tu XP, rachas, respuestas y niveles desbloqueados. No puede deshacerse.',
+    [
+      { label: 'Cancelar', action: 'closeModal()', style: 'background:var(--bg-card2);border:1px solid var(--border);color:var(--text-main)' },
+      { label: '🗑 Sí, borrar todo mi progreso', action: 'executeReset()', style: 'background:var(--danger);color:#fff' }
+    ]
+  );
+}
+
+function executeReset() {
+  closeModal();
+  try { localStorage.removeItem('gcs_state'); } catch(_) {}
+  state = { ...DEFAULT_STATE, levelsUnlocked:[1], answers:{}, hintUsed:{}, attemptCounts:{},
+    compStats:{ o:{correct:0,total:0}, v:{correct:0,total:0}, m:{correct:0,total:0} } };
+  state.ntAllConfirmed = false;
+  renderPractica();
+  showToast('Progreso reiniciado desde cero', 'info');
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+
+loadState();
+renderStats();
+// Render level progress and tabs on load (for stats bar)
+if (document.getElementById('level-progress-container')) renderLevelProgress();
+if (document.getElementById('level-tabs')) renderLevelTabs();
+if (document.getElementById('comp-stats-container')) renderCompStats();
+</script>
+</body>
+</html>
